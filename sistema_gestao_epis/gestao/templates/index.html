@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão</title>
+    <link rel="stylesheet" href="{% static 'gestao/css/styles.css' %}" media="screen" title="no title" charset="utf-8">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="user-info">
+            <img src="user-photo.jpg" alt="Foto do Usuário" class="user-photo" id="user-photo">
+            <span class="user-name" id="user-name">Lucas Silva</span>
+        </div>
+        <div class="settings-menu" id="settings-menu">
+            <ul>
+                <li><a href="#">Configurações de Perfil</a></li>
+                <li><a href="#">Alterar Senha</a></li>
+                <li><a href="#" onclick="confirmarLogout()">Sair</a></li>
+            </ul>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="cadastrar_epi">Equipamentos</a></li>
+                <li><a href="cadastro_colaboradores">Usuários</a></li>
+                <li><a href="emprestimo">Emprestimos</a></li>
+                <li><a href="#" onclick="confirmarLogout()">Sair</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <h1>Bem-vindo ao Sistema de Gestão</h1>
+        <p>Conteúdo da página aqui.</p>
+    </div>
+
+    <script>
+        function confirmarLogout() {
+            let confirmar = confirm("Tem certeza que deseja sair do sistema?");
+            if (confirmar) {
+                window.location.href = "/login";  // Redireciona para a página de login
+            }
+        }
+    </script>
+</body>
+</html>
