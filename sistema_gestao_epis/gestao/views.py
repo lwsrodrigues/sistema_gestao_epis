@@ -53,6 +53,11 @@ def login_view(request):
 def admin_dashboard(request):
     return render(request, 'index.html')
 
+@login_required
+@user_passes_test(is_admin)
+def controle_epi(request):
+    return render(request, 'controle_epi.html')
+
 # Painel do Usuário Comum
 @login_required
 @user_passes_test(is_user_common)
@@ -67,7 +72,7 @@ def cadastro_colaboradores(request):
 
 # Empréstimos (Usuários Comuns e Admins podem acessar)
 @login_required
-@user_passes_test(is_admin_or_common)
+@user_passes_test(is_admin)
 def emprestimo(request):
     return render(request, 'emprestimo.html')
 
@@ -112,3 +117,4 @@ def atualizar_colaborador(request, id):
         return redirect('cadastro_colaboradores')
 
     return render(request, 'cadastro_colaboradores.html', {'colaborador': colaborador})
+

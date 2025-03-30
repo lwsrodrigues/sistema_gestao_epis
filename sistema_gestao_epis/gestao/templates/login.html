@@ -4,34 +4,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Acessar Sistema | Gestão</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'gestao/css/styles.css' %}">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #f8f9fc;
+            --accent-color: #2e59d9;
+            --text-color: #5a5c69;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f8f9fc 0%, #dbe2ef 100%);
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .login-card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            width: 100%;
+            max-width: 400px;
+            overflow: hidden;
+        }
+        
+        .login-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .login-body {
+            padding: 2rem;
+            background-color: white;
+        }
+        
+        .form-control {
+            padding: 0.75rem 1rem;
+            border-radius: 0.35rem;
+            border: 1px solid #d1d3e2;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+        
+        .btn-login {
+            background-color: var(--primary-color);
+            border: none;
+            padding: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-login:hover {
+            background-color: var(--accent-color);
+            transform: translateY(-1px);
+        }
+        
+        .form-floating label {
+            color: #6e707e;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        
+        .logo {
+            max-width: 120px;
+            margin-bottom: 1rem;
+        }
+        
+        .divider {
+            position: relative;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        
+        .divider::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #e3e6f0;
+            z-index: 1;
+        }
+        
+        .divider-text {
+            display: inline-block;
+            background-color: white;
+            padding: 0 1rem;
+            position: relative;
+            z-index: 2;
+            color: #b7b9cc;
+            font-size: 0.85rem;
+        }
+        
+        .extra-options {
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .extra-options a {
+            color: var(--text-color);
+            text-decoration: none;
+        }
+        
+        .extra-options a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+    </style>
 </head>
-<body class="d-flex justify-content-center align-items-center vh-100">
-    <div class="card p-4 shadow-lg" style="width: 350px;">
-        <h3 class="text-center mb-3">Login</h3>
+<body class="d-flex justify-content-center align-items-center p-3">
+    <div class="login-card shadow-lg">
+        <div class="login-header">
+            <!-- Substitua pelo seu logo -->
+            <img src="{% static 'gestao/img/logo-white.png' %}" alt="Logo" class="logo">
+            <h4 class="mb-0">Bem-vindo de volta!</h4>
+        </div>
         
-
-        <form method="post">
-            {% csrf_token %}
-            {% if error %}
-                <div class="alert alert-danger">{{ error }}</div>
+        <div class="login-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
             {% endif %}
-        
-            <div class="mb-3">
-                <label for="username" class="form-label">Usuário</label>
-                <input type="text" class="form-control" id="username" name="username" required>
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Senha</label>
-                <input type="password" class="form-control" id="password" name="password" required>
-            </div>
             
-            <button type="submit" class="btn btn-primary w-100">Entrar</button>
-        </form>
-        
-        
+            {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Usuário" required>
+                    <label for="username"><i class="fas fa-user me-2"></i>Usuário</label>
+                    <div class="invalid-feedback">
+                        Por favor, insira seu nome de usuário.
+                    </div>
+                </div>
+                
+                <div class="form-floating mb-3 position-relative">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Senha" required>
+                    <label for="password"><i class="fas fa-lock me-2"></i>Senha</label>
+                    <i class="password-toggle fas fa-eye" onclick="togglePassword()"></i>
+                    <div class="invalid-feedback">
+                        Por favor, insira sua senha.
+                    </div>
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="rememberMe">
+                    <label class="form-check-label" for="rememberMe">
+                        Lembrar de mim
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-login btn-primary w-100 mb-3">
+                    <i class="fas fa-sign-in-alt me-2"></i> Entrar
+                </button>
+                
+                <div class="extra-options">
+                    <a href="#">Esqueceu a senha?</a>
+                    <span class="mx-2">•</span>
+                    <a href="#">Criar uma conta</a>
+                </div>
+            </form>
+        </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mostrar/esconder senha
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            const toggleIcon = document.querySelector('.password-toggle');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+        
+        // Validação de formulário
+        (function() {
+            'use strict';
+            
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            const forms = document.querySelectorAll('.needs-validation');
+            
+            // Loop over them and prevent submission
+            Array.prototype.slice.call(forms)
+                .forEach(function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+        })();
+    </script>
 </body>
 </html>

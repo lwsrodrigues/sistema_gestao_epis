@@ -4,143 +4,460 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de EPI</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEJ03v1X+P8jT6jRauMyf+2n0l4KjqNq7zR0R8w06Scy5x3r1BQYtS4ZW0x0d" crossorigin="anonymous">
+    <title>Controle de EPI | Sistema de Gestão</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="{% static 'gestao/css/styles.css' %}">
-    <a href="{% url 'cadastro_colaboradores' %}">Ir para Cadastro de Colaboradores</a>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
 </head>
 <body>
-
-
+     
+    
     <div class="sidebar">
-        <div class="user-info">
-            <div class="user-photo-container" id="user-photo-container">
-                <!-- Imagem de ícone de usuário, você pode usar qualquer ícone -->
-                <img src="https://via.placeholder.com/100x100.png?text=User" alt="Foto do Usuário" class="user-photo" id="user-photo" onclick="editarPerfil()">
-                <!-- Texto de edição da foto -->
-                <span class="edit-photo-text" onclick="editarPerfil()">Editar Foto</span>
+        <div class="sidebar-header">
+            <div class="user-profile" onclick="toggleSettingsMenu()">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                    <img src="{% static 'path/para/sua-foto.jpg' %}" alt="" class="user-avatar-img">
+                </div>
+                <div class="user-info">
+                    <span class="user-name">Lucas Silva</span>
+                    <span class="user-role">Administrador</span>
+                    <span class="user-email">email@dominio.com</span>
+                </div>
+                <i class="fas fa-chevron-down toggle-icon"></i>
             </div>
-            <span class="user-name" id="user-name">Lucas Silva</span>
-            <span class="user-email" id="user-email">email@dominio.com</span>
         </div>
+    
         <div class="settings-menu" id="settings-menu">
             <ul>
-                <li><a href="#">Configurações de Perfil</a></li>
-                <li><a href="#">Alterar Senha</a></li>
-                <li><a href="#" onclick="confirmarLogout()">Sair</a></li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-user-cog"></i>
+                        <span>Configurações de Perfil</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-key"></i>
+                        <span>Alterar Senha</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="confirmarLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Sair</span>
+                    </a>
+                </li>
             </ul>
         </div>
-        <nav>
+    
+        <nav class="sidebar-nav">
             <ul>
-                <li><a href="{% url 'cadastrar_epi' %}">Equipamentos</a></li>
-                <li><a href="{% url 'cadastro_colaboradores' %}">Usuários</a></li>
-                <li><a href="{% url 'emprestimo' %}">Empréstimos</a></li>
-                <li><a href="{% url 'controle_epi' %}">Dashboard</a></li>
-                <li><a href="#" onclick="confirmarLogout()">Sair</a></li>
+                <li class="nav-item">
+                    <a href="{% url 'admin_dashboard' %}" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'cadastrar_epi' %}" class="nav-link">
+                        <i class="fas fa-hard-hat"></i>
+                        <span>Equipamentos</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="{% url 'cadastro_colaboradores' %}" class="nav-link">
+                        <i class="fas fa-users"></i>
+                        <span>Usuários</span>
+                        <span class="badge bg-primary">5</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'emprestimo' %}" class="nav-link">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Empréstimos</span>
+                        <span class="badge bg-warning">3</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="confirmarLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Sair</span>
+                    </a>
+                </li>
+              
             </ul>
         </nav>
+    
+        <div class="sidebar-footer">
+            <div class="system-info">
+                <i class="fas fa-circle text-success"></i>
+                <span>Sistema Online</span>
+            </div>
+            <div class="version-info">
+                v2.1.0
+            </div>
+        </div>
     </div>
     
+   
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    function toggleSettingsMenu() {
+        const menu = document.getElementById("settings-menu");
+        menu.classList.toggle("active");
+        
+        const icon = document.querySelector(".toggle-icon");
+        icon.style.transform = menu.classList.contains("active") ? "rotate(180deg)" : "rotate(0)";
+    }
+    
+        // Confirmar logout
+        function confirmarLogout() {
+            Swal.fire({
+                title: 'Tem certeza?',
+                text: "Você será desconectado do sistema!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sim, sair!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/login";
+                }
+            });
+        }
+    
+    // Para versão mobile - alternar sidebar
+    function toggleSidebar() {
+        document.querySelector('.sidebar').classList.toggle('active');
+    }
+    </script>
 
-    <div class="container mt-4">
-        <h2>Controle de EPI</h2>
 
-        <!-- Mensagem de Sucesso ou Erro -->
-        {% if success_message %}
-            <div class="alert alert-success" role="alert">
-                {{ success_message }}
+    <div class="main-content">
+        <div class="container-fluid py-4">
+            <div class="page-header mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="page-title">
+                        <i class="fas fa-hard-hat me-2"></i>Controle de EPIs
+                    </h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#quickLoanModal">
+                            <i class="fas fa-plus me-2"></i>Novo Empréstimo Rápido
+                        </button>
+                    </div>
+                </div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Controle de EPIs</li>
+                    </ol>
+                </nav>
             </div>
-        {% elif error_message %}
-            <div class="alert alert-danger" role="alert">
-                {{ error_message }}
-            </div>
-        {% endif %}
 
-        <!-- Formulário de Cadastro de EPI -->
-        <form method="post">
-            {% csrf_token %}
-            <div class="mb-3">
-                <label for="nome_equipamento" class="form-label">Nome do Equipamento</label>
-                <input type="text" class="form-control" id="nome_equipamento" name="nome_equipamento" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="colaborador" class="form-label">Colaborador</label>
-                <select class="form-select" id="colaborador" name="colaborador" required>
-                    <option value="">Selecione o colaborador</option>
-                    {% for colaborador in colaboradores %}
-                        <option value="{{ colaborador.id }}">{{ colaborador.nome }}</option>
+            <!-- Mensagens de sistema -->
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
                     {% endfor %}
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label for="data_entrega" class="form-label">Data de Entrega</label>
-                <input type="datetime-local" class="form-control" id="data_entrega" name="data_entrega" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="data_prev_devolucao" class="form-label">Data Prevista para Devolução</label>
-                <input type="datetime-local" class="form-control" id="data_prev_devolucao" name="data_prev_devolucao" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="status" class="form-label">Status do EPI</label>
-                <select class="form-select" id="status" name="status" required>
-                    <option value="Emprestado">Emprestado</option>
-                    <option value="Em Uso">Em Uso</option>
-                    <option value="Fornecido">Fornecido</option>
-                    <!-- Os status Devolvido, Danificado e Perdido só aparecerão ao editar -->
-                    <option value="Devolvido" style="display: none;">Devolvido</option>
-                    <option value="Danificado" style="display: none;">Danificado</option>
-                    <option value="Perdido" style="display: none;">Perdido</option>
-                </select>
-            </div>
-
-            <div id="devolucao_fields" style="display: none;">
-                <div class="mb-3">
-                    <label for="data_devolucao" class="form-label">Data de Devolução</label>
-                    <input type="datetime-local" class="form-control" id="data_devolucao" name="data_devolucao">
                 </div>
-                <div class="mb-3">
-                    <label for="observacao_devolucao" class="form-label">Observação na Devolução</label>
-                    <textarea class="form-control" id="observacao_devolucao" name="observacao_devolucao" rows="3"></textarea>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-white">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-clipboard-list me-2"></i>Registro de EPIs
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" id="epiForm" class="needs-validation" novalidate>
+                                {% csrf_token %}
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="nome_equipamento" class="form-label">Equipamento *</label>
+                                        <select class="form-select select2" id="nome_equipamento" name="nome_equipamento" required>
+                                            <option value="">Selecione um equipamento</option>
+                                            {% for epi in epis_disponiveis %}
+                                                <option value="{{ epi.id }}" data-stock="{{ epi.quantidade_disponivel }}">{{ epi.nome }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Por favor, selecione um equipamento.
+                                        </div>
+                                        <small class="text-muted mt-1 d-block" id="stock-info">
+                                            Quantidade disponível: <span id="stock-value">0</span>
+                                        </small>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="colaborador" class="form-label">Colaborador *</label>
+                                        <select class="form-select select2" id="colaborador" name="colaborador" required>
+                                            <option value="">Selecione o colaborador</option>
+                                            {% for colaborador in colaboradores %}
+                                                <option value="{{ colaborador.id }}">{{ colaborador.nome }} - {{ colaborador.matricula }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Por favor, selecione um colaborador.
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="data_entrega" class="form-label">Data de Entrega *</label>
+                                        <input type="datetime-local" class="form-control flatpickr" id="data_entrega" name="data_entrega" required>
+                                        <div class="invalid-feedback">
+                                            Por favor, informe a data de entrega.
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="data_prev_devolucao" class="form-label">Previsão de Devolução *</label>
+                                        <input type="datetime-local" class="form-control flatpickr" id="data_prev_devolucao" name="data_prev_devolucao" required>
+                                        <div class="invalid-feedback">
+                                            Por favor, informe a data prevista de devolução.
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="status" class="form-label">Status *</label>
+                                        <select class="form-select" id="status" name="status" required>
+                                            <option value="Emprestado" selected>Emprestado</option>
+                                            <option value="Em Uso">Em Uso</option>
+                                            <option value="Fornecido">Fornecido</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-12" id="devolucao_fields" style="display: none;">
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <h5 class="card-title text-primary">
+                                                    <i class="fas fa-undo me-2"></i>Informações de Devolução
+                                                </h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label for="data_devolucao" class="form-label">Data de Devolução</label>
+                                                        <input type="datetime-local" class="form-control flatpickr" id="data_devolucao" name="data_devolucao">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="status_devolucao" class="form-label">Status na Devolução</label>
+                                                        <select class="form-select" id="status_devolucao" name="status_devolucao">
+                                                            <option value="Devolvido">Devolvido</option>
+                                                            <option value="Danificado">Danificado</option>
+                                                            <option value="Perdido">Perdido</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <label for="observacao_devolucao" class="form-label">Observações</label>
+                                                        <textarea class="form-control" id="observacao_devolucao" name="observacao_devolucao" rows="2" placeholder="Descreva o estado do equipamento..."></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label for="observacoes" class="form-label">Observações</label>
+                                        <textarea class="form-control" id="observacoes" name="observacoes" rows="2" placeholder="Informações adicionais..."></textarea>
+                                    </div>
+
+                                    <div class="col-12 mt-4">
+                                        <button type="submit" class="btn btn-primary me-2">
+                                            <i class="fas fa-save me-2"></i>Salvar Registro
+                                        </button>
+                                        <button type="reset" class="btn btn-outline-secondary">
+                                            <i class="fas fa-undo me-2"></i>Limpar
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-white">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informações Importantes
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <h5 class="alert-heading">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Orientações
+                                </h5>
+                                <ul class="mb-0">
+                                    <li>Verifique a disponibilidade do EPI antes do empréstimo</li>
+                                    <li>Registre todas as devoluções com o status correto</li>
+                                    <li>Equipamentos danificados devem ser enviados para manutenção</li>
+                                </ul>
+                            </div>
+
+                            <div class="quick-stats mt-4">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-chart-bar me-2"></i>Estatísticas Rápidas
+                                </h5>
+                                <div class="stats-grid">
+                                    <div class="stat-item bg-primary-light">
+                                        <div class="stat-value text-primary">{{ total_emprestados }}</div>
+                                        <div class="stat-label">Emprestados</div>
+                                    </div>
+                                    <div class="stat-item bg-success-light">
+                                        <div class="stat-value text-success">{{ total_disponiveis }}</div>
+                                        <div class="stat-label">Disponíveis</div>
+                                    </div>
+                                    <div class="stat-item bg-warning-light">
+                                        <div class="stat-value text-warning">{{ total_vencendo }}</div>
+                                        <div class="stat-label">Vencendo</div>
+                                    </div>
+                                    <div class="stat-item bg-danger-light">
+                                        <div class="stat-value text-danger">{{ total_atrasados }}</div>
+                                        <div class="stat-label">Atrasados</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <button type="submit" class="btn btn-primary">Cadastrar EPI</button>
-        </form>
+        </div>
     </div>
 
+    <!-- Modal de Empréstimo Rápido -->
+    <div class="modal fade" id="quickLoanModal" tabindex="-1" aria-labelledby="quickLoanModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="quickLoanModalLabel">
+                        <i class="fas fa-bolt me-2"></i>Empréstimo Rápido
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="quickLoanForm">
+                        <div class="mb-3">
+                            <label for="quick_epi" class="form-label">Equipamento</label>
+                            <select class="form-select" id="quick_epi" name="quick_epi" required>
+                                <option value="">Selecione um EPI</option>
+                                {% for epi in epis_disponiveis %}
+                                    <option value="{{ epi.id }}">{{ epi.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="quick_colaborador" class="form-label">Colaborador</label>
+                            <select class="form-select" id="quick_colaborador" name="quick_colaborador" required>
+                                <option value="">Selecione o colaborador</option>
+                                {% for colaborador in colaboradores %}
+                                    <option value="{{ colaborador.id }}">{{ colaborador.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="quick_prev_devolucao" class="form-label">Previsão de Devolução</label>
+                            <input type="date" class="form-control" id="quick_prev_devolucao" name="quick_prev_devolucao" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirmQuickLoan">
+                        <i class="fas fa-check me-2"></i>Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        // Quando o status do EPI mudar
-        $('#status').on('change', function () {
-            var status = $(this).val();
+        // Inicialização do Flatpickr para campos de data
+        flatpickr(".flatpickr", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            locale: "pt"
+        });
+
+        // Inicialização do Select2 para selects melhorados
+        $(document).ready(function() {
+            $('.select2').select2({
+                placeholder: "Selecione uma opção",
+                width: '100%'
+            });
+        });
+
+        // Mostrar informações de estoque ao selecionar EPI
+        $('#nome_equipamento').on('change', function() {
+            const selectedOption = $(this).find('option:selected');
+            const stock = selectedOption.data('stock') || 0;
+            $('#stock-value').text(stock);
             
-            // Exibe campos de devolução apenas para status Devolvido, Danificado ou Perdido
+            if (stock <= 0) {
+                $('#stock-info').addClass('text-danger').removeClass('text-muted');
+            } else {
+                $('#stock-info').addClass('text-muted').removeClass('text-danger');
+            }
+        });
+
+        // Controle dos campos de devolução
+        $('#status').on('change', function() {
+            const status = $(this).val();
             if (status === "Devolvido" || status === "Danificado" || status === "Perdido") {
                 $('#devolucao_fields').show();
             } else {
                 $('#devolucao_fields').hide();
             }
+        });
 
-            // Oculta status "Devolvido", "Danificado", "Perdido" ao cadastrar
-            if (status === "Emprestado" || status === "Em Uso" || status === "Fornecido") {
-                $('#status option[value="Devolvido"]').hide();
-                $('#status option[value="Danificado"]').hide();
-                $('#status option[value="Perdido"]').hide();
+        // Validação do formulário
+        (function() {
+            'use strict';
+            const forms = document.querySelectorAll('.needs-validation');
+            
+            Array.prototype.slice.call(forms)
+                .forEach(function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+        })();
+
+        // Validação da data de devolução
+        $('#data_prev_devolucao').on('change', function() {
+            const entrega = new Date($('#data_entrega').val());
+            const devolucao = new Date($(this).val());
+            
+            if (devolucao < entrega) {
+                alert('A data prevista para devolução deve ser posterior à data de entrega!');
+                $(this).val('');
             }
         });
 
-        // Previne a data de devolução ser anterior à data atual
-        $('#data_prev_devolucao').on('change', function() {
-            var now = new Date();
-            var data_prev_devolucao = new Date($(this).val());
-            if (data_prev_devolucao < now) {
-                alert("A data prevista para devolução deve ser posterior à data atual!");
-                $(this).val('');
-            }
+        // Empréstimo rápido
+        $('#confirmQuickLoan').on('click', function() {
+            // Lógica para empréstimo rápido aqui
+            alert('Empréstimo rápido registrado com sucesso!');
+            $('#quickLoanModal').modal('hide');
         });
     </script>
 </body>

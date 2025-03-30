@@ -1,87 +1,12 @@
-/* Estilos para a sidebar */
-body {
-    display: flex;
-    margin: 0;
-    font-family: Arial, sans-serif;
-}
-
-.sidebar {
-    width: 250px;
-    height: 100vh;
-    background-color: #2c3e50;
-    color: white;
-    padding: 20px;
-    position: fixed;
-}
-
-.sidebar .user-info {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.sidebar .user-photo {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    margin-bottom: 10px;
-}
-
-.sidebar .user-name {
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.sidebar .settings-menu {
-    display: none;
-    background-color: #34495e;
-    margin-top: 20px;
-    padding: 10px;
-    border-radius: 5px;
-}
-
-.sidebar .settings-menu ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-.sidebar .settings-menu ul li a {
-    color: white;
-    text-decoration: none;
-    padding: 8px;
-    display: block;
-}
-
-.sidebar .settings-menu ul li a:hover {
-    background-color: #1abc9c;
-}
-
-.sidebar nav ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-.sidebar nav ul li {
-    margin: 10px 0;
-}
-
-.sidebar nav ul li a {
-    color: white;
-    text-decoration: none;
-    padding: 10px;
-    display: block;
-}
-
-.sidebar nav ul li a:hover {
-    background-color: #34495e;
-}
 
 /* Estilos para o conteúdo principal */
 .main-content {
-    margin-left: 250px;
+    margin-left: 280px;
     padding: 20px;
     background-color: #ecf0f1;
     min-height: 100vh;
+    width: calc(100% - 250px); /* Ajusta a largura do conteúdo, subtraindo a sidebar */
+    box-sizing: border-box;
 }
 
 /* Estilo básico para o corpo da página */
@@ -89,6 +14,7 @@ body {
     font-family: 'Arial', sans-serif;
     background-color: #f8f9fa;
     color: #333;
+    margin: 0;
 }
 
 /* Centraliza a container e define margens */
@@ -157,13 +83,27 @@ button:hover {
 
 /* Ajustes no layout para responsividade */
 @media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+    }
+    
+    .main-content {
+        margin-left: 200px;
+        width: calc(100% - 200px);
+    }
+
     .container {
         padding: 15px;
     }
+
     h2 {
         font-size: 1.5rem;
     }
 }
+
+
+
+
 .card {
     border-radius: 10px;
 }
@@ -179,4 +119,396 @@ button:hover {
 
 .btn-primary:hover {
     background-color: #0056b3;
+}
+
+.user-photo {
+    width: 50px;
+    height: 50px;
+    background-color: #ccc; /* Cor do fundo */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #fff;
+    cursor: pointer;
+}
+
+.user-photo::before {
+    content: "👤"; /* Ícone de usuário */
+}
+
+
+
+.charts-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    flex-wrap: wrap;
+    justify-content: center; /* Centraliza os cards */
+}
+
+.card {
+    background-color: #b2d0f6;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 400px; /* Largura fixa ou use calc(50% - 20px) */
+    min-width: 300px;
+    box-sizing: border-box;
+}
+
+.card h3 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+canvas {
+    max-width: 100%;
+    height: auto !important;
+}
+.notifications-section {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 20px 0;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.notifications-header h2 {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    color: #333;
+    font-size: 1.4rem;
+}
+
+.notifications-header .fa-bell {
+    margin-right: 10px;
+    color: #4a6baf;
+}
+
+.badge {
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+    margin-left: 10px;
+}
+
+.mark-all-read {
+    background: none;
+    border: none;
+    color: #4a6baf;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.mark-all-read:hover {
+    text-decoration: underline;
+}
+
+.notification-item {
+    display: flex;
+    padding: 12px 0;
+    border-bottom: 1px solid #f5f5f5;
+    align-items: center;
+}
+
+.notification-item.unread {
+    background-color: #f8f9fa;
+}
+
+.notification-icon {
+    margin-right: 15px;
+    font-size: 1.2rem;
+    color: #e74c3c;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-message {
+    margin: 0;
+    color: #333;
+    font-weight: 500;
+}
+
+.notification-meta {
+    margin-top: 5px;
+    display: flex;
+    font-size: 0.8rem;
+    color: #777;
+}
+
+.notification-time {
+    margin-right: 15px;
+}
+
+.notification-category {
+    background-color: #e8f0fe;
+    color: #4a6baf;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+}
+
+.notification-action {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.notification-action:hover {
+    color: #333;
+}
+
+.notifications-footer {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.view-all {
+    color: #4a6baf;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.view-all:hover {
+    text-decoration: underline;
+}
+
+/* Ícones do Font Awesome */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+
+
+.card1{
+
+    min-height: 600px;  /* Altura mínima aumentada */
+    width: 100%;        /* Largura total */
+
+
+}
+
+
+
+
+/* Estilos Gerais do Sidebar */
+.sidebar {
+    width: 280px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: #2c3e50;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+/* Header do Sidebar */
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.user-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.user-profile:hover {
+    opacity: 0.9;
+}
+
+.user-avatar {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 15px;
+}
+
+.user-avatar i {
+    font-size: 80px;
+    color: #ecf0f1;
+}
+
+.edit-photo {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #3498db;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.user-info {
+    margin-bottom: 15px;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: block;
+}
+
+.user-role {
+    display: block;
+    font-size: 0.8rem;
+    background: #3498db;
+    padding: 3px 8px;
+    border-radius: 20px;
+    margin: 5px 0;
+}
+
+.user-email {
+    font-size: 0.85rem;
+    color: #bdc3c7;
+    display: block;
+}
+
+.toggle-icon {
+    transition: transform 0.3s;
+}
+
+.settings-menu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    background: #34495e;
+}
+
+.settings-menu.active {
+    max-height: 200px;
+}
+
+.settings-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.settings-menu li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #ecf0f1;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.settings-menu li a:hover {
+    background: #3d566e;
+    padding-left: 25px;
+}
+
+.settings-menu li a i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
+
+/* Navegação */
+.sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px 0;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-item {
+    margin-bottom: 5px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #ecf0f1;
+    text-decoration: none;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.nav-link:hover {
+    background: #34495e;
+}
+
+.nav-link.active {
+    background: #3498db;
+}
+
+.nav-link i {
+    font-size: 1.1rem;
+    margin-right: 15px;
+    width: 20px;
+    text-align: center;
+}
+
+.badge {
+    margin-left: auto;
+    font-size: 0.7rem;
+    padding: 4px 8px;
+}
+
+/* Footer do Sidebar */
+.sidebar-footer {
+    padding: 15px 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.8rem;
+    color: #bdc3c7;
+}
+
+.system-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.system-info i {
+    margin-right: 8px;
+    font-size: 0.6rem;
+}
+
+/* Responsividade */
+@media (max-width: 992px) {
+    .sidebar {
+        width: 250px;
+        transform: translateX(-250px);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
 }
