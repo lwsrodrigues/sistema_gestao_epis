@@ -57,7 +57,7 @@ ROOT_URLCONF = 'sistema_gestao_epis.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+         'DIRS': [str(BASE_DIR / 'templates')],  # Adiciona o diretório templates
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -70,6 +70,7 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'sistema_gestao_epis.wsgi.application'
 
 
@@ -78,8 +79,12 @@ WSGI_APPLICATION = 'sistema_gestao_epis.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',  # Usando MySQL
+        'NAME': 'sistema_gestao',  # Nome do seu banco de dados no MySQL
+        'USER': 'root',  # Seu usuário MySQL
+        'PASSWORD': 'Lucas.1995',  # Senha do seu usuário MySQL
+        'HOST': 'localhost',  # Servidor MySQL, geralmente 'localhost'
+        'PORT': '3306',  # Porta do MySQL, geralmente 3306
     }
 }
 

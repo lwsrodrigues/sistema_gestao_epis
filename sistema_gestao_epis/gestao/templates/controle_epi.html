@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de EPI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEJ03v1X+P8jT6jRauMyf+2n0l4KjqNq7zR0R8w06Scy5x3r1BQYtS4ZW0x0d" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'gestao/css/styles.css' %}">
+    <a href="{% url 'cadastro_colaboradores' %}">Ir para Cadastro de Colaboradores</a>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+
+    <div class="sidebar">
+        <div class="user-info">
+            <div class="user-photo-container" id="user-photo-container">
+                <!-- Imagem de ícone de usuário, você pode usar qualquer ícone -->
+                <img src="https://via.placeholder.com/100x100.png?text=User" alt="Foto do Usuário" class="user-photo" id="user-photo" onclick="editarPerfil()">
+                <!-- Texto de edição da foto -->
+                <span class="edit-photo-text" onclick="editarPerfil()">Editar Foto</span>
+            </div>
+            <span class="user-name" id="user-name">Lucas Silva</span>
+            <span class="user-email" id="user-email">email@dominio.com</span>
+        </div>
+        <div class="settings-menu" id="settings-menu">
+            <ul>
+                <li><a href="#">Configurações de Perfil</a></li>
+                <li><a href="#">Alterar Senha</a></li>
+                <li><a href="#" onclick="confirmarLogout()">Sair</a></li>
+            </ul>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{% url 'cadastrar_epi' %}">Equipamentos</a></li>
+                <li><a href="{% url 'cadastro_colaboradores' %}">Usuários</a></li>
+                <li><a href="{% url 'emprestimo' %}">Empréstimos</a></li>
+                <li><a href="{% url 'controle_epi' %}">Dashboard</a></li>
+                <li><a href="#" onclick="confirmarLogout()">Sair</a></li>
+            </ul>
+        </nav>
+    </div>
+    
+
+    <div class="container mt-4">
+        <h2>Controle de EPI</h2>
+
+        <!-- Mensagem de Sucesso ou Erro -->
+        {% if success_message %}
+            <div class="alert alert-success" role="alert">
+                {{ success_message }}
+            </div>
+        {% elif error_message %}
+            <div class="alert alert-danger" role="alert">
+                {{ error_message }}
+            </div>
+        {% endif %}
+
+        <!-- Formulário de Cadastro de EPI -->
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="nome_equipamento" class="form-label">Nome do Equipamento</label>
+                <input type="text" class="form-control" id="nome_equipamento" name="nome_equipamento" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="colaborador" class="form-label">Colaborador</label>
+                <select class="form-select" id="colaborador" name="colaborador" required>
+                    <option value="">Selecione o colaborador</option>
+                    {% for colaborador in colaboradores %}
+                        <option value="{{ colaborador.id }}">{{ colaborador.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="data_entrega" class="form-label">Data de Entrega</label>
+                <input type="datetime-local" class="form-control" id="data_entrega" name="data_entrega" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="data_prev_devolucao" class="form-label">Data Prevista para Devolução</label>
+                <input type="datetime-local" class="form-control" id="data_prev_devolucao" name="data_prev_devolucao" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="status" class="form-label">Status do EPI</label>
+                <select class="form-select" id="status" name="status" required>
+                    <option value="Emprestado">Emprestado</option>
+                    <option value="Em Uso">Em Uso</option>
+                    <option value="Fornecido">Fornecido</option>
+                    <!-- Os status Devolvido, Danificado e Perdido só aparecerão ao editar -->
+                    <option value="Devolvido" style="display: none;">Devolvido</option>
+                    <option value="Danificado" style="display: none;">Danificado</option>
+                    <option value="Perdido" style="display: none;">Perdido</option>
+                </select>
+            </div>
+
+            <div id="devolucao_fields" style="display: none;">
+                <div class="mb-3">
+                    <label for="data_devolucao" class="form-label">Data de Devolução</label>
+                    <input type="datetime-local" class="form-control" id="data_devolucao" name="data_devolucao">
+                </div>
+                <div class="mb-3">
+                    <label for="observacao_devolucao" class="form-label">Observação na Devolução</label>
+                    <textarea class="form-control" id="observacao_devolucao" name="observacao_devolucao" rows="3"></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Cadastrar EPI</button>
+        </form>
+    </div>
+
+    <script>
+        // Quando o status do EPI mudar
+        $('#status').on('change', function () {
+            var status = $(this).val();
+            
+            // Exibe campos de devolução apenas para status Devolvido, Danificado ou Perdido
+            if (status === "Devolvido" || status === "Danificado" || status === "Perdido") {
+                $('#devolucao_fields').show();
+            } else {
+                $('#devolucao_fields').hide();
+            }
+
+            // Oculta status "Devolvido", "Danificado", "Perdido" ao cadastrar
+            if (status === "Emprestado" || status === "Em Uso" || status === "Fornecido") {
+                $('#status option[value="Devolvido"]').hide();
+                $('#status option[value="Danificado"]').hide();
+                $('#status option[value="Perdido"]').hide();
+            }
+        });
+
+        // Previne a data de devolução ser anterior à data atual
+        $('#data_prev_devolucao').on('change', function() {
+            var now = new Date();
+            var data_prev_devolucao = new Date($(this).val());
+            if (data_prev_devolucao < now) {
+                alert("A data prevista para devolução deve ser posterior à data atual!");
+                $(this).val('');
+            }
+        });
+    </script>
+</body>
+</html>

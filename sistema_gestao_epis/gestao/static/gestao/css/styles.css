@@ -1,0 +1,232 @@
+/* Estilos para a sidebar */
+body {
+    display: flex;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    background-color: #2c3e50;
+    color: white;
+    padding: 20px;
+    position: fixed;
+}
+
+.sidebar .user-info {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sidebar .user-photo {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.sidebar .user-name {
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.sidebar .settings-menu {
+    display: none;
+    background-color: #34495e;
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.sidebar .settings-menu ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar .settings-menu ul li a {
+    color: white;
+    text-decoration: none;
+    padding: 8px;
+    display: block;
+}
+
+.sidebar .settings-menu ul li a:hover {
+    background-color: #1abc9c;
+}
+
+.sidebar nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar nav ul li {
+    margin: 10px 0;
+}
+
+.sidebar nav ul li a {
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+    display: block;
+}
+
+.sidebar nav ul li a:hover {
+    background-color: #34495e;
+}
+
+/* Estilos para o conteúdo principal */
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+    background-color: #ecf0f1;
+    min-height: 100vh;
+}
+
+/* Estilo básico para o corpo da página */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* Centraliza a container e define margens */
+.container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Estilo para o título da página */
+h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #007bff;
+    text-align: center;
+}
+
+/* Estiliza as mensagens de sucesso ou erro */
+.alert {
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+.alert-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.alert-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Estilo para os campos de input */
+input[type="text"],
+input[type="number"],
+button {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+/* Estilo para o botão de cadastro */
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo para as labels dos campos */
+.form-label {
+    font-weight: bold;
+}
+
+/* Ajustes no layout para responsividade */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    h2 {
+        font-size: 1.5rem;
+    }
+}
+.card {
+    border-radius: 10px;
+}
+
+.card h3 {
+    font-weight: bold;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+/* Estilo para a foto do usuário e área de edição */
+.user-photo-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #f1f1f1; /* Cor de fundo caso o usuário não tenha foto */
+    cursor: pointer;
+}
+
+.user-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Faz com que a imagem ocupe toda a área */
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.edit-photo-text {
+    position: absolute;
+    bottom: 5px;
+    font-size: 12px;
+    color: #007bff;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 3px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: none; /* Esconde até que o usuário não tenha uma foto */
+}
+
+.user-photo-container:hover .edit-photo-text {
+    display: block; /* Exibe o texto para editar foto quando o usuário passa o mouse sobre a imagem */
+}
+
+.user-name {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.user-email {
+    font-size: 14px;
+    text-align: center;
+    color: #666;
+}
