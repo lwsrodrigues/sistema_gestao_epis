@@ -9,37 +9,6 @@
     <link rel="stylesheet" href="{% static 'gestao/css/styles.css' %}">
 </head>
 <body>
-
-    <div class="sidebar">
-        <div class="user-info">
-            <div class="user-photo-container" id="user-photo-container">
-                <!-- Imagem de ícone de usuário, você pode usar qualquer ícone -->
-                <img src="https://via.placeholder.com/100x100.png?text=User" alt="Foto do Usuário" class="user-photo" id="user-photo" onclick="editarPerfil()">
-                <!-- Texto de edição da foto -->
-                <span class="edit-photo-text" onclick="editarPerfil()">Editar Foto</span>
-            </div>
-            <span class="user-name" id="user-name">Lucas Silva</span>
-            <span class="user-email" id="user-email">email@dominio.com</span>
-        </div>
-        <div class="settings-menu" id="settings-menu">
-            <ul>
-                <li><a href="#">Configurações de Perfil</a></li>
-                <li><a href="#">Alterar Senha</a></li>
-                <li><a href="#" onclick="confirmarLogout()">Sair</a></li>
-            </ul>
-        </div>
-        <nav>
-            <ul>
-                <li><a href="{% url 'cadastrar_epi' %}">Equipamentos</a></li>
-                <li><a href="{% url 'cadastro_colaboradores' %}">Usuários</a></li>
-                <li><a href="{% url 'emprestimo' %}">Empréstimos</a></li>
-                <li><a href="{% url 'controle_epi' %}">Dashboard</a></li>
-                <li><a href="#" onclick="confirmarLogout()">Sair</a></li>
-            </ul>
-        </nav>
-    </div>
-    
-    
     <div class="container mt-4">
         <h2 class="mb-4">Cadastro de Colaboradores</h2>
 

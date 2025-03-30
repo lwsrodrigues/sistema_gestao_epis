@@ -77,10 +77,6 @@ def emprestimo(request):
 def cadastrar_epi(request):
     return render(request, 'cadastrar_epi.html')
 
-@login_required
-@user_passes_test(is_admin)
-def controle_epi(request):
-    return render(request, 'controle_epi.html')
 
 
 def cadastro_colaboradores(request):

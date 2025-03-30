@@ -11,7 +11,6 @@ urlpatterns = [
     path('admin-dashboard/cadastro_colaboradores/', views.cadastro_colaboradores, name='cadastro_colaboradores'),
     path('admin-dashboard/emprestimo/', views.emprestimo, name='emprestimo'),
     path('admin-dashboard/sair/', views.login_view, name='login'),
-    path('admin-dashboard/controle_epi/', views.controle_epi, name='controle_epi'),
     
     
     path('cadastro_colaboradores/', views.cadastro_colaboradores, name='cadastro_colaboradores'),
