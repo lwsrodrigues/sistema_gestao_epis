@@ -105,6 +105,12 @@
                     <span class="badge bg-warning float-end">3</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" onclick="confirmarLogout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sair</span>
+                </a>
+            </li>
         </ul>
     </nav>
 </div>
@@ -129,6 +135,25 @@
                 <i class="fas fa-plus me-2"></i> Novo Colaborador
             </button>
         </div>
+
+
+<!-- Adicione este código logo antes da div do card da tabela -->
+<!-- Barra de pesquisa melhorada -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" id="barraPesquisa" class="form-control" 
+                   placeholder="Pesquisar por nome, matrícula ou email...">
+            <button class="btn btn-outline-secondary" type="button" id="limparPesquisa">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Sua tabela existente aqui -->
+
 
         <!-- Tabela -->
         <div class="card shadow-sm">
@@ -244,6 +269,50 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+
+    $(document).ready(function() {
+        // Função de filtro avançada
+        $('#barraPesquisa').on('keyup', function() {
+            const termo = $(this).val().toLowerCase();
+            
+            if (termo === '') {
+                $('tbody tr').show();
+                return;
+            }
+            
+            $('tbody tr').each(function() {
+                const nome = $(this).find('strong').text().toLowerCase();
+                const matricula = $(this).find('td:eq(1)').text().toLowerCase();
+                const email = $(this).find('td:eq(2)').text().toLowerCase();
+                const setor = $(this).find('.small').text().toLowerCase();
+                
+                const corresponde = 
+                    nome.includes(termo) || 
+                    matricula.includes(termo) || 
+                    email.includes(termo) || 
+                    setor.includes(termo);
+                
+                $(this).toggle(corresponde);
+            });
+        });
+        
+        // Botão para limpar pesquisa
+        $('#limparPesquisa').click(function() {
+            $('#barraPesquisa').val('').trigger('keyup');
+        });
+        
+        // Focar na barra ao pressionar Ctrl+F
+        $(document).on('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                $('#barraPesquisa').focus();
+            }
+        });
+    });
+
+
+
+
     $(document).ready(function() {
         const colaboradorModal = $('#colaboradorModal');
         const colaboradorForm = $('#formColaborador');
