@@ -129,3 +129,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# settings.py (adicione no final)
+try:
+    from django.db import connection
+    cursor = connection.cursor()
+    cursor.execute("SELECT 1")
+    print("\n✅ Conexão com o MySQL funcionando!")
+except Exception as e:
+    print(f"\n❌ Erro na conexão MySQL: {e}")

@@ -1,10 +1,13 @@
-
+from django.http import JsonResponse  
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login
 from .models import Colaborador
-
+from django.views.decorators.csrf import csrf_exempt
+import json
 from django.contrib.auth.models import Group
+from django.db import models
+from django.views.decorators.http import require_http_methods
 
 # Verifica se o usuário é administrador
 def is_admin(user):
@@ -13,6 +16,10 @@ def is_admin(user):
 # Verifica se o usuário é do grupo "UsuariosComuns"
 def is_user_common(user):
     return user.groups.filter(name="UsuariosComuns").exists()
+
+def cadastro_colaboradores(request):
+    colaboradores = Colaborador.objects.all().order_by('-id')  # Ordena por ID decrescente
+    return render(request, 'cadastro_colaboradores.html', {'colaboradores': colaboradores})
 
 # Função para verificar se o usuário tem permissão para acessar a página
 def is_admin_or_common(user):
@@ -84,37 +91,82 @@ def cadastrar_epi(request):
 
 
 
-def cadastro_colaboradores(request):
-    if request.method == 'POST':
-        nome = request.POST['nome']
-        matricula = request.POST['matricula']
-        status = request.POST['status']
 
-        # Verifica se a matrícula já existe
-        if Colaborador.objects.filter(matricula=matricula).exists():
-            messages.error(request, "Matrícula já cadastrada!")
-        else:
-            Colaborador.objects.create(nome=nome, matricula=matricula, status=status)
-            messages.success(request, "Colaborador cadastrado com sucesso!")
+ # Apenas para desenvolvimento, remova em produção
+@require_http_methods(["POST"])
+def cadastrar_colaborador(request):
+    try:
+        novo_colaborador = Colaborador.objects.create(
+            nome=request.POST.get('nome'),
+            matricula=request.POST.get('matricula'),
+            email=request.POST.get('email'),
+            setor=request.POST.get('setor'),
+            status=request.POST.get('status'),
+            observacoes=request.POST.get('observacoes', '')
+        )
+        return JsonResponse({
+            'success': True,
+            'id': novo_colaborador.id,
+            'nome': novo_colaborador.nome,
+            'matricula': novo_colaborador.matricula,
+            'email': novo_colaborador.email,
+            'setor': novo_colaborador.setor,
+            'status': novo_colaborador.status,
+            'observacoes': novo_colaborador.observacoes
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)
+@require_http_methods(["PUT"])
+def editar_colaborador(request):
+    try:
+        colaborador_id = request.POST.get('id')
+        if not colaborador_id:
+            return JsonResponse({'success': False, 'message': 'ID do colaborador não fornecido'}, status=400)
+            
+        colaborador = Colaborador.objects.get(id=colaborador_id)
+        colaborador.id = colaborador_id
+        colaborador.nome = request.POST.get('nome')
+        colaborador.matricula = request.POST.get('matricula')
+        colaborador.email = request.POST.get('email')
+        colaborador.setor = request.POST.get('setor')
+        colaborador.status = request.POST.get('status')
+        colaborador.observacoes = request.POST.get('observacoes', '')
+        
+        colaborador.save()        
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
-    colaboradores = Colaborador.objects.all()
-    return render(request, 'cadastro_colaboradores.html', {'colaboradores': colaboradores})
+@require_http_methods(["DELETE"])
+def excluir_colaborador(request, id):
+    try:
+        colaborador = Colaborador.objects.get(id=id)
+        colaborador.delete()
+        return JsonResponse({'success': True})
+    except Colaborador.DoesNotExist:
+        return JsonResponse({'success': False}, status=404)
 
-def deletar_colaborador(request, id):
-    colaborador = get_object_or_404(Colaborador, id=id)
-    colaborador.delete()
-    messages.success(request, "Colaborador removido com sucesso!")
-    return redirect('cadastro_colaboradores')
-
-def atualizar_colaborador(request, id):
-    colaborador = get_object_or_404(Colaborador, id=id)
-    if request.method == 'POST':
-        colaborador.nome = request.POST['nome']
-        colaborador.matricula = request.POST['matricula']
-        colaborador.status = request.POST['status']
-        colaborador.save()
-        messages.success(request, "Colaborador atualizado com sucesso!")
-        return redirect('cadastro_colaboradores')
-
-    return render(request, 'cadastro_colaboradores.html', {'colaborador': colaborador})
-
+@require_http_methods(["GET"])
+def obter_colaborador(request, id):
+    try:
+        colaborador = Colaborador.objects.get(id=id)
+        return JsonResponse({
+            'success': True,
+            'id': colaborador.id,
+            'nome': colaborador.nome,
+            'matricula': colaborador.matricula,
+            'email': colaborador.email,
+            'setor': colaborador.setor,
+            'status': colaborador.status,
+            'observacoes': colaborador.observacoes
+        })
+    except Colaborador.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Colaborador não encontrado'}, status=404)
+    
+    
+def listar_colaboradores(request):
+    colaboradores = Colaborador.objects.all().values('id', 'nome', 'matricula', 'email', 'setor', 'status')
+    return JsonResponse({
+        'success': True,
+        'colaboradores': list(colaboradores)  # Converte para lista
+    })

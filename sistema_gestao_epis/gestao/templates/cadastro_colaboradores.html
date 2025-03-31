@@ -5,611 +5,481 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestão de Colaboradores | Sistema EPI</title>
+    <!-- CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
-    <link rel="stylesheet" href="{% static 'gestao/css/styles.css' %}">
-    
+    <style>
+        /* Layout Principal */
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            position: fixed;
+            height: 100vh;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        /* Table Styles */
+        .table-responsive {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .status-badge {
+            padding: 0.35em 0.65em;
+            border-radius: 50px;
+            font-size: 0.8em;
+        }
+        .status-ativo { background-color: #e6f7ee; color: #28a745; }
+        .status-inativo { background-color: #fde8e8; color: #dc3545; }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
 </head>
-<body><div class="sidebar">
-    <div class="sidebar-header">
-        <div class="user-profile" onclick="toggleSettingsMenu()">
-            <div class="user-avatar">
-                <i class="fas fa-user-circle"></i>
-                <img src="{% static 'path/para/sua-foto.jpg' %}" alt="" class="user-avatar-img">
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-header p-3">
+        <div class="user-profile d-flex flex-column align-items-center">
+            <div class="user-avatar mb-3">
+                <i class="fas fa-user-circle fa-4x"></i>
             </div>
-            <div class="user-info">
-                <span class="user-name">Lucas Silva</span>
-                <span class="user-role">Administrador</span>
-                <span class="user-email">email@dominio.com</span>
+            <div class="user-info text-center">
+                <span class="user-name d-block fw-bold">Lucas Silva</span>
+                <span class="user-role badge bg-primary mt-1">Administrador</span>
+                <span class="user-email small d-block mt-1">email@dominio.com</span>
             </div>
-            <i class="fas fa-chevron-down toggle-icon"></i>
         </div>
     </div>
 
-    <div class="settings-menu" id="settings-menu">
-        <ul>
-            <li>
-                <a href="#">
-                    <i class="fas fa-user-cog"></i>
-                    <span>Configurações de Perfil</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <i class="fas fa-key"></i>
-                    <span>Alterar Senha</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" onclick="confirmarLogout()">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Sair</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <nav class="sidebar-nav">
-        <ul>
+    <nav class="sidebar-nav p-2">
+        <ul class="nav flex-column">
             <li class="nav-item">
-                <a href="{% url 'admin_dashboard' %}" class="nav-link">
-                    <i class="fas fa-home"></i>
-                    <span>Home</span>
+                <a href="{% url 'admin_dashboard' %}" class="nav-link text-white">
+                    <i class="fas fa-home me-2"></i> Home
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{% url 'cadastrar_epi' %}" class="nav-link">
-                    <i class="fas fa-hard-hat"></i>
-                    <span>Equipamentos</span>
+                <a href="{% url 'cadastrar_epi' %}" class="nav-link text-white">
+                    <i class="fas fa-hard-hat me-2"></i> Equipamentos
                 </a>
             </li>
-            <li class="nav-item active">
-                <a href="{% url 'cadastro_colaboradores' %}" class="nav-link">
-                    <i class="fas fa-users"></i>
-                    <span>Usuários</span>
-                    <span class="badge bg-primary">5</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{% url 'emprestimo' %}" class="nav-link">
-                    <i class="fas fa-exchange-alt"></i>
-                    <span>Empréstimos</span>
-                    <span class="badge bg-warning">3</span>
+            <li class="nav-item active bg-primary rounded">
+                <a href="{% url 'cadastro_colaboradores' %}" class="nav-link text-white">
+                    <i class="fas fa-users me-2"></i> Usuários
+                    <span class="badge bg-light text-primary float-end">{{ colaboradores.count }}</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" onclick="confirmarLogout()">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Sair</span>
+                <a href="{% url 'emprestimo' %}" class="nav-link text-white">
+                    <i class="fas fa-exchange-alt me-2"></i> Empréstimos
+                    <span class="badge bg-warning float-end">3</span>
                 </a>
             </li>
-          
         </ul>
     </nav>
+</div>
 
-    <div class="sidebar-footer">
-        <div class="system-info">
-            <i class="fas fa-circle text-success"></i>
-            <span>Sistema Online</span>
+<!-- Main Content -->
+<div class="main-content">
+    <div class="container-fluid">
+        <!-- Cabeçalho -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-users me-2 text-primary"></i> Gestão de Colaboradores
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Colaboradores</li>
+                    </ol>
+                </nav>
+            </div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#colaboradorModal">
+                <i class="fas fa-plus me-2"></i> Novo Colaborador
+            </button>
         </div>
-        <div class="version-info">
-            v2.1.0
+
+        <!-- Tabela -->
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nome</th>
+                                <th>Matrícula</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for colaborador in colaboradores %}
+                            <tr data-id="{{ colaborador.id }}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-user-circle me-2 text-muted"></i>
+                                        <div>
+                                            <strong>{{ colaborador.nome }}</strong>
+                                            <div class="text-muted small">{{ colaborador.setor|default:"-" }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ colaborador.matricula }}</td>
+                                <td>{{ colaborador.email|default:"-" }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ colaborador.status|lower }}">
+                                        {{ colaborador.status }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-excluir">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-function toggleSettingsMenu() {
-    const menu = document.getElementById("settings-menu");
-    menu.classList.toggle("active");
-    
-    const icon = document.querySelector(".toggle-icon");
-    icon.style.transform = menu.classList.contains("active") ? "rotate(180deg)" : "rotate(0)";
-}
+<!-- Modal -->
+<div class="modal fade" id="colaboradorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">
+                    <i class="fas fa-user-plus me-2"></i> Novo Colaborador
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formColaborador" method="post">
+                {% csrf_token %}
+                <input type="hidden" id="colaboradorId" name="id">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nome Completo</label>
+                            <input type="text" name="nome" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Matrícula</label>
+                            <input type="text" name="matricula" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">E-mail</label>
+                            <input type="email" name="email" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Setor</label>
+                            <select name="setor" class="form-select">
+                                <option value="">Selecione...</option>
+                                <option value="Produção">Produção</option>
+                                <option value="Administrativo">Administrativo</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Observações</label>
+                            <textarea class="form-control" name="observacoes" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select" required>
+                                <option value="Ativo" selected>Ativo</option>
+                                <option value="Inativo">Inativo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="modalSubmitBtn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
-function confirmarLogout() {
-    Swal.fire({
-        title: 'Tem certeza?',
-        text: "Você será desconectado do sistema!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sim, sair!',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = "/login";
+<!-- JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    $(document).ready(function() {
+        const colaboradorModal = $('#colaboradorModal');
+        const colaboradorForm = $('#formColaborador');
+        
+        // Configuração inicial do modal
+        $('[data-bs-target="#colaboradorModal"]').click(function() {
+            colaboradorForm[0].reset();
+            $('#modalTitle').html('<i class="fas fa-user-plus me-2"></i> Novo Colaborador');
+            $('#modalSubmitBtn').text('Salvar');
+            colaboradorForm.attr('data-mode', 'create');
+        });
+    
+        // Editar colaborador
+        $(document).on('click', '.btn-editar', function() {
+            const row = $(this).closest('tr');
+            const colaboradorId = row.data('id');
+            
+            if (!colaboradorId) {
+                Swal.fire('Erro', 'ID do colaborador não identificado', 'error');
+                return;
+            }
+    
+            // Busca dados do servidor
+            $.ajax({
+                url: `/colaboradores/obter/${colaboradorId}/`,
+                method: 'GET',
+                success: function(response) {
+                    if (!response.success) {
+                        Swal.fire('Erro', response.message || 'Erro ao carregar dados', 'error');
+                        return;
+                    }
+    
+                    $('#modalTitle').html('<i class="fas fa-edit me-2"></i> Editar Colaborador');
+                    $('#modalSubmitBtn').text('Atualizar');
+                    colaboradorForm.attr('data-mode', 'edit');
+                    
+                    // Preenche o formulário
+                    $('#colaboradorId').val(response.id);
+                    $('input[name="nome"]').val(response.nome);
+                    $('input[name="matricula"]').val(response.matricula);
+                    $('input[name="email"]').val(response.email);
+                    $('select[name="setor"]').val(response.setor);
+                    $('textarea[name="observacoes"]').val(response.observacoes || '');
+                    $('select[name="status"]').val(response.status);
+                    
+                    colaboradorModal.modal('show');
+                },
+                error: function() {
+                    Swal.fire('Erro', 'Falha ao carregar dados do colaborador', 'error');
+                }
+            });
+        });
+
+
+
+        // Função para carregar colaboradores do banco de dados
+function carregarColaboradores() {
+    $.ajax({
+        url: "{% url 'listar_colaboradores' %}",  // Certifique-se de criar esta URL
+        method: "GET",
+        success: function(response) {
+            if (response.success && response.colaboradores) {
+                $("tbody").empty(); // Limpa a tabela antes de carregar
+                
+                // Adiciona cada colaborador na tabela
+                response.colaboradores.forEach(colab => {
+                    const newRow = `
+                    <tr data-id="${colab.id}">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-circle me-2 text-muted"></i>
+                                <div>
+                                    <strong>${colab.nome}</strong>
+                                    <div class="text-muted small">${colab.setor || '-'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${colab.matricula}</td>
+                        <td>${colab.email || '-'}</td>
+                        <td>
+                            <span class="status-badge status-${colab.status.toLowerCase()}">
+                                ${colab.status}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-primary me-1 btn-editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger btn-excluir">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                    $("tbody").append(newRow);
+                });
+            }
+        },
+        error: function() {
+            Swal.fire("Erro", "Não foi possível carregar os colaboradores.", "error");
         }
     });
 }
 
-// Para versão mobile - alternar sidebar
-function toggleSidebar() {
-    document.querySelector('.sidebar').classList.toggle('active');
-}
-</script>
-    <div class="main-content">
-        <div class="container-fluid py-4">
-            <!-- Cabeçalho da Página -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 class="h3 mb-0">
-                        <i class="fas fa-users me-2 text-primary"></i>Gestão de Colaboradores
-                    </h1>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Colaboradores</li>
-                        </ol>
-                    </nav>
-                </div>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoColaboradorModal">
-                    <i class="fas fa-plus me-2"></i>Novo Colaborador
-                </button>
-            </div>
-
-            <!-- Mensagens do Sistema -->
-            {% if messages %}
-            <div class="alert-container mb-4">
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-
-
-            <style>
-                /* Layout Principal */
-                body {
-                    display: flex;
-                    min-height: 100vh;
-                    background-color: #f8f9fa;
-                }
-                
-                /* Sidebar fixo */
-                .sidebar {
-                    width: 250px;
-                    min-height: 100vh;
-                    position: fixed;
-                    left: 0;
-                    top: 0;
-                    background: #2c3e50;
-                    color: white;
-                    z-index: 1000;
-                    /* Seus estilos existentes do sidebar */
-                }
-                
-                /* Conteúdo principal */
-                .main-content {
-                    flex: 1;
-                    margin-left: 250px; /* Igual à largura do sidebar */
-                    padding: 20px;
-                    transition: all 0.3s;
-                }
-                
-                /* Container do card ajustado */
-                .container-fluid {
-                    max-width: 1200px;
-                    margin: 0 auto;
-                    padding: 0 15px;
-                }
-                
-                /* Ajustes específicos para o card */
-                .card.lista-colaboradores {
-                    width: 100%;
-                    margin: 0 auto;
-                    border-radius: 10px;
-                    overflow: hidden;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                }
-                
-                /* Garantir que o conteúdo não fique espremido */
-                @media (max-width: 992px) {
-                    .sidebar {
-                        width: 220px;
-                    }
-                    .main-content {
-                        margin-left: 220px;
-                    }
-                }
-                
-                /* Ajustes para mobile */
-                @media (max-width: 768px) {
-                    .sidebar {
-                        width: 100%;
-                        position: relative;
-                        min-height: auto;
-                    }
-                    .main-content {
-                        margin-left: 0;
-                    }
-                    .card.lista-colaboradores {
-                        min-width: 100%;
-                    }
-                }
-                </style>
-            <style>
-
-
-                /* Container principal do card */
-                .card.lista-colaboradores {
-                    width: 98%;
-                    max-width: 1200px;
-                    min-width: 1000px;
-                    margin: 20px auto;
-                    border-radius: 10px;
-                    overflow: hidden;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                }
-                
-                /* Cabeçalho do card */
-                .card.lista-colaboradores .card-header {
-                    background: #fff;
-                    padding: 1.25rem 2rem;
-                    border-bottom: 1px solid #eee;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-                
-                /* Título do cabeçalho */
-                .card.lista-colaboradores .card-header h5 {
-                    font-size: 1.25rem;
-                    font-weight: 600;
-                    color: #2c3e50;
-                    margin: 0;
-                }
-                
-                /* Área de pesquisa */
-                .card.lista-colaboradores .search-container {
-                    width: 280px;
-                }
-                
-                .card.lista-colaboradores .input-group-text {
-                    background: #f8f9fa;
-                    border-color: #dee2e6;
-                }
-                
-                .card.lista-colaboradores .form-control {
-                    border-color: #dee2e6;
-                }
-                
-                /* Corpo do card */
-                .card.lista-colaboradores .card-body {
-                    padding: 0;
-                }
-                
-                /* Tabela */
-                .card.lista-colaboradores .table-responsive {
-                    max-height: 600px;
-                    overflow-y: auto;
-                }
-                
-                .card.lista-colaboradores .table {
-                    margin-bottom: 0;
-                    width: 100%;
-                }
-                
-                .card.lista-colaboradores .table thead {
-                    position: sticky;
-                    top: 0;
-                    background: #f8f9fa;
-                    z-index: 10;
-                }
-                
-                .card.lista-colaboradores .table th {
-                    font-weight: 600;
-                    color: #495057;
-                    padding: 1rem 1.5rem;
-                    vertical-align: middle;
-                    border-top: none;
-                }
-                
-                .card.lista-colaboradores .table td {
-                    padding: 1rem 1.5rem;
-                    vertical-align: middle;
-                    border-top: 1px solid #eee;
-                }
-                
-                /* Linhas da tabela */
-                .card.lista-colaboradores .table tr:hover {
-                    background-color: #f8fafc;
-                }
-                
-                /* Avatar do colaborador */
-                .card.lista-colaboradores .avatar {
-                    font-size: 1.5rem;
-                    color: #6c757d;
-                }
-                
-                /* Badge de status */
-                .card.lista-colaboradores .status-badge {
-                    display: inline-block;
-                    padding: 0.35rem 0.75rem;
-                    border-radius: 50px;
-                    font-size: 0.8rem;
-                    font-weight: 500;
-                }
-                
-                .card.lista-colaboradores .status-ativo {
-                    background-color: #e6f7ee;
-                    color: #28a745;
-                }
-                
-                .card.lista-colaboradores .status-inativo {
-                    background-color: #fde8e8;
-                    color: #dc3545;
-                }
-                
-                .card.lista-colaboradores .status-afastado {
-                    background-color: #fff8e6;
-                    color: #ffc107;
-                }
-                
-                /* Botões de ação */
-                .card.lista-colaboradores .action-btn {
-                    padding: 0.5rem 0.75rem;
-                    font-size: 0.85rem;
-                    border-radius: 5px;
-                    margin: 0 3px;
-                    transition: all 0.2s;
-                }
-                
-                .card.lista-colaboradores .action-btn:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                }
-                
-                /* Rodapé do card */
-                .card.lista-colaboradores .card-footer {
-                    background: #fff;
-                    padding: 1rem 2rem;
-                    border-top: 1px solid #eee;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-                
-                /* Paginação */
-                .card.lista-colaboradores .pagination {
-                    margin: 0;
-                }
-                
-                .card.lista-colaboradores .page-item .page-link {
-                    border-radius: 5px;
-                    margin: 0 3px;
-                    border: none;
-                    color: #495057;
-                }
-                
-                .card.lista-colaboradores .page-item.active .page-link {
-                    background-color: #2c3e50;
-                    color: white;
-                }
-                
-                /* Contador de registros */
-                .card.lista-colaboradores .text-muted small {
-                    font-size: 0.85rem;
-                    color: #6c757d;
-                }
-                </style>
-                
-                <!-- Tabela de Colaboradores -->
-                <div class="card lista-colaboradores">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-list me-2 text-primary"></i>Lista de Colaboradores
-                        </h5>
-                        <div class="search-container">
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="fas fa-search text-muted"></i>
-                                </span>
-                                <input type="text" id="searchInput" class="form-control" 
-                                       placeholder="Pesquisar por nome..." aria-label="Pesquisar">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th style="width: 35%;">Nome</th>
-                                        <th style="width: 20%;">Matrícula</th>
-                                        <th style="width: 20%;">Status</th>
-                                        <th style="width: 25%;" class="text-end">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabelaColaboradores">
-                                    {% for colaborador in colaboradores %}
-                                    <tr class="collaborator-row" data-nome="{{ colaborador.nome|lower }}" data-matricula="{{ colaborador.matricula|lower }}">
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar me-3">
-                                                    <i class="fas fa-user-circle"></i>
-                                                </div>
-                                                <div>
-                                                    <strong class="collaborator-name">{{ colaborador.nome }}</strong>
-                                                    <div class="text-muted small">{{ colaborador.email|default:"-" }}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="collaborator-matricula">{{ colaborador.matricula }}</td>
-                                        <td>
-                                            <span class="status-badge status-{{ colaborador.status|lower }}">
-                                                {{ colaborador.status }}
-                                            </span>
-                                        </td>
-                                        <td class="text-end">
-                                            <div class="btn-group" role="group">
-                                                <a href="{% url 'atualizar_colaborador' colaborador.id %}" class="btn btn-outline-primary action-btn" title="Editar">
-                                                    <i class="fas fa-edit me-1"></i> Editar
-                                                </a>
-                                                <a href="{% url 'deletar_colaborador' colaborador.id %}" class="btn btn-outline-danger action-btn" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este colaborador?')">
-                                                    <i class="fas fa-trash-alt me-1"></i> Excluir
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="text-muted small">
-                                Mostrando <strong id="showing-count">{{ colaboradores|length }}</strong> de 
-                                <strong>{{ total_colaboradores }}</strong> registros
-                            </div>
-                            <nav aria-label="Page navigation">
-                                <ul class="pagination pagination-sm mb-0">
-                                    <li class="page-item disabled">
-                                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
-                                    </li>
-                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="#">Próxima</a>
-                                    </li>
-                                </ul>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-
+// Carrega os colaboradores quando a página abre
+$(document).ready(function() {
+    carregarColaboradores();
+});
+    
+        // Submit do formulário (criação e edição)
+        colaboradorForm.submit(function(e) {
+            e.preventDefault();
             
-
-    <!-- Modal Novo Colaborador -->
-    <div class="modal fade" id="novoColaboradorModal" tabindex="-1" aria-labelledby="novoColaboradorModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="novoColaboradorModalLabel">
-                        <i class="fas fa-user-plus me-2"></i>Novo Colaborador
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="modalCadastroForm">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="modalNome" class="form-label">Nome Completo</label>
-                                <input type="text" class="form-control" id="modalNome" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="modalMatricula" class="form-label">Matrícula</label>
-                                <input type="text" class="form-control" id="modalMatricula" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="modalEmail" class="form-label">E-mail</label>
-                                <input type="email" class="form-control" id="modalEmail">
-                            </div>
-                         
-                            <div class="col-md-6">
-                                <label for="modalSetor" class="form-label">Setor</label>
-                                <select class="form-select" id="modalSetor">
-                                    <option value="">Selecione um setor</option>
-                                    <option value="Produção">Produção</option>
-                                    <option value="Administrativo">Administrativo</option>
-                                    <option value="Manutenção">Manutenção</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="modalStatus" class="form-label">Status</label>
-                                <select class="form-select" id="modalStatus" required>
-                                    <option value="Ativo" selected>Ativo</option>
-                                    <option value="Inativo">Inativo</option>
-                                    <option value="Afastado">Afastado</option>
-                                </select>
-                            </div>
-                            <div class="col-12">
-                                <label for="modalObservacoes" class="form-label">Observações</label>
-                                <textarea class="form-control" id="modalObservacoes" rows="2"></textarea>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="salvarColaborador">
-                        <i class="fas fa-save me-2"></i>Salvar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script>
-        // Inicialização do Select2
-        $(document).ready(function() {
-            $('#filterStatus').select2({
-                placeholder: "Filtrar por status",
-                minimumResultsForSearch: Infinity
+            const isEditMode = $(this).attr('data-mode') === 'edit';
+            const url = isEditMode ? "{% url 'editar_colaborador' %}" : "{% url 'cadastrar_colaborador' %}";
+            const method = isEditMode ? 'PUT' : 'POST';
+    
+            $.ajax({
+                url: url,
+                method: method,
+                data: $(this).serialize(),
+                headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                success: function(response) {
+                    if (!response.success) {
+                        Swal.fire('Erro', response.message || 'Operação falhou', 'error');
+                        return;
+                    }
+    
+                    colaboradorModal.modal('hide');
+                    
+                    if (isEditMode) {
+                        // Atualiza a linha existente
+                        const row = $(`tr[data-id="${response.id}"]`);
+                        row.find('strong').text(response.nome);
+                        row.find('td:eq(1)').text(response.matricula);
+                        row.find('td:eq(2)').text(response.email || '-');
+                        row.find('.small').text(response.setor || '-');
+                        row.find('.status-badge')
+                            .removeClass('status-ativo status-inativo')
+                            .addClass(`status-${response.status.toLowerCase()}`)
+                            .text(response.status);
+                    } else {
+                        // Adiciona novo colaborador na tabela
+                        const newRow = `
+                        <tr data-id="${response.id}">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user-circle me-2 text-muted"></i>
+                                    <div>
+                                        <strong>${response.nome}</strong>
+                                        <div class="text-muted small">${response.setor || '-'}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${response.matricula}</td>
+                            <td>${response.email || '-'}</td>
+                            <td>
+                                <span class="status-badge status-${response.status.toLowerCase()}">
+                                    ${response.status}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary me-1 btn-editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-excluir">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>`;
+                        $('tbody').prepend(newRow);
+                    }
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sucesso!',
+                        text: isEditMode ? 'Atualizado com sucesso!' : 'Cadastrado com sucesso!',
+                    });
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro',
+                        text: xhr.responseJSON?.message || 'Erro no servidor'
+                    });
+                }
             });
         });
-
-        // Pesquisa dinâmica na tabela
+    
+        // Excluir colaborador
+        $(document).on('click', '.btn-excluir', function() {
+            const row = $(this).closest('tr');
+            const colaboradorId = row.data('id');
+            console.log('ID do colaborador:', colaboradorId)
+             if (!colaboradorId) {
+        Swal.fire('Erro', 'ID do colaborador não identificado', 'error');
+        return;
+    }
+            
+            Swal.fire({
+                title: 'Tem certeza?',
+                text: "Você não poderá reverter isso!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sim, excluir!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `/colaboradores/excluir/${colaboradorId}/`,
+                        method: 'DELETE',
+                        headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                        success: function(response) {
+                            if (response.success) {
+                                row.fadeOut(300, function() {
+                                    $(this).remove();
+                                });
+                                Swal.fire('Excluído!', 'O colaborador foi removido.', 'success');
+                            } else {
+                                Swal.fire('Erro!', response.message || 'Erro ao excluir', 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Erro!', 'Falha na comunicação com o servidor', 'error');
+                        }
+                    });
+                }
+            });
+        });
+    
+        // Filtro simples
         $('#searchInput').on('keyup', function() {
             const value = $(this).val().toLowerCase();
-            $('#tabelaColaboradores tr').filter(function() {
-                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            $('tbody tr').filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
             });
         });
-
-        // Filtro por status
-        $('#filterStatus').on('change', function() {
-            const status = $(this).val();
-            if (status === "") {
-                $('#tabelaColaboradores tr').show();
-            } else {
-                $('#tabelaColaboradores tr').each(function() {
-                    const rowStatus = $(this).find('.status-badge').text().trim();
-                    $(this).toggle(rowStatus === status);
-                });
-            }
-        });
-
-        // Confirmação antes de excluir
-        $(document).on('click', '.btn-excluir', function(e) {
-            if (!confirm('Tem certeza que deseja excluir este colaborador?')) {
-                e.preventDefault();
-            }
-        });
-
-        // Modal - Salvar novo colaborador
-        $('#salvarColaborador').on('click', function() {
-            // Aqui você adicionaria a lógica para salvar
-            alert('Colaborador cadastrado com sucesso!');
-            $('#novoColaboradorModal').modal('hide');
-        });
-
-        // Mostrar mensagens de sucesso/erro
-        function showMessage(message, type) {
-            const alert = `
-                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            `;
-            $('.alert-container').html(alert);
-        }
+    });
     </script>
-</body>
-</html>

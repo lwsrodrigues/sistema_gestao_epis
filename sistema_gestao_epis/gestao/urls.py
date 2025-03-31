@@ -14,9 +14,12 @@ urlpatterns = [
     path('admin-dashboard/controle_epi/', views.controle_epi, name='controle_epi'),
     
     
-    path('cadastro_colaboradores/', views.cadastro_colaboradores, name='cadastro_colaboradores'),
-    path('deletar_colaborador/<int:id>/', views.deletar_colaborador, name='deletar_colaborador'),
-    path('atualizar_colaborador/<int:id>/', views.atualizar_colaborador, name='atualizar_colaborador'),
+path('cadastro_colaboradores/', views.cadastro_colaboradores, name='cadastro_colaboradores'),
+ path('colaboradores/cadastrar/', views.cadastrar_colaborador, name='cadastrar_colaborador'),
+    path('colaboradores/editar/', views.editar_colaborador, name='editar_colaborador'),
+    path('colaboradores/excluir/<int:id>/', views.excluir_colaborador, name='excluir_colaborador'),
+    path('colaboradores/obter/<int:id>/', views.obter_colaborador, name='obter_colaborador'),
+  path('colaboradores/listar/', views.listar_colaboradores, name='listar_colaboradores'),
 
 
     # Usuário comum
