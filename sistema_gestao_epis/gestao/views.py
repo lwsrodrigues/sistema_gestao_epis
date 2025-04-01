@@ -2,12 +2,14 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login
-from .models import Colaborador
+from .models import Colaborador, Equipamento
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.contrib.auth.models import Group
 from django.db import models
 from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.csrf import csrf_exempt
 
 # Verifica se o usuário é administrador
 def is_admin(user):
@@ -28,6 +30,7 @@ def is_admin_or_common(user):
 # Página inicial (qualquer um pode acessar)
 def home(request):
     return render(request, 'index.html')
+
 
 
 
@@ -84,10 +87,10 @@ def emprestimo(request):
     return render(request, 'emprestimo.html')
 
 # Cadastrar EPI (Apenas Admin pode acessar)
-@login_required
-@user_passes_test(is_admin)
-def cadastrar_epi(request):
-    return render(request, 'cadastrar_epi.html')
+
+
+
+
 
 
 
@@ -169,4 +172,155 @@ def listar_colaboradores(request):
     return JsonResponse({
         'success': True,
         'colaboradores': list(colaboradores)  # Converte para lista
+    })
+    
+    
+@login_required
+@user_passes_test(is_admin)
+def cadastrar_epi(request):
+    if request.method == 'POST':
+        try:
+            novo_epi = Equipamento.objects.create(
+                nome=request.POST.get('nome'),
+                tipo=request.POST.get('tipo'),
+                numero_serie=request.POST.get('numero_serie', ''),
+                data_fabricacao=request.POST.get('data_fabricacao') or None,
+                status=request.POST.get('status', 'Disponível'),
+                quantidade=int(request.POST.get('quantidade', 1)),
+                observacoes=request.POST.get('observacoes', '')
+            )
+            return JsonResponse({
+                'success': True,
+                'message': 'EPI cadastrado com sucesso!',
+                'equipamento': {
+                    'id': novo_epi.id,
+                    'nome': novo_epi.nome,
+                    'tipo': novo_epi.tipo,
+                    'status': novo_epi.status,
+                    'data_cadastro': novo_epi.data_cadastro.strftime('%d/%m/%Y %H:%M') if hasattr(novo_epi, 'data_cadastro') else ''
+                }
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=400)
+    
+    # Para GET ou outros métodos
+    return render(request, 'cadastrar_epi.html', {
+        'tipos_epi': Equipamento.TIPO_CHOICES,
+        'status_choices': Equipamento.STATUS_CHOICES
+    })
+    
+@csrf_exempt
+@require_http_methods(['GET'])
+@login_required
+@user_passes_test(is_admin)
+def obter_equipamento(request, id):
+    try:
+        equipamento = Equipamento.objects.get(id=id)
+        return JsonResponse({
+            'success': True,
+            'id': equipamento.id,
+            'nome': equipamento.nome,
+            'tipo': equipamento.tipo,
+            'numero_serie': equipamento.numero_serie,
+            'quantidade': equipamento.quantidade,
+            'data_fabricacao': equipamento.data_fabricacao.strftime('%Y-%m-%d') if equipamento.data_fabricacao else None,
+            'status': equipamento.status,
+            'observacoes': equipamento.observacoes,
+            'ultima_atualizacao': equipamento.ultima_atualizacao.strftime('%d/%m/%Y %H:%M')
+        })
+    except Equipamento.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Equipamento não encontrado'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+@csrf_exempt
+@require_http_methods(['PUT'])
+@login_required
+@user_passes_test(is_admin)
+def editar_equipamento(request):
+    try:
+        data = request.POST
+        equipamento_id = data.get('id')
+        
+        if not equipamento_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'ID do equipamento não fornecido'
+            }, status=400)
+            
+        equipamento = Equipamento.objects.get(id=equipamento_id)
+        
+        # Atualiza os campos
+        equipamento.nome = data.get('nome', equipamento.nome)
+        equipamento.tipo = data.get('tipo', equipamento.tipo)
+        equipamento.numero_serie = data.get('numero_serie', equipamento.numero_serie)
+        equipamento.quantidade = int(data.get('quantidade', equipamento.quantidade))
+        equipamento.data_fabricacao = data.get('data_fabricacao', equipamento.data_fabricacao)
+        equipamento.status = data.get('status', equipamento.status)
+        equipamento.observacoes = data.get('observacoes', equipamento.observacoes)
+        
+        equipamento.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Equipamento atualizado com sucesso',
+            'equipamento': {
+                'id': equipamento.id,
+                'nome': equipamento.nome,
+                'tipo': equipamento.tipo,
+                'status': equipamento.status,
+                'ultima_atualizacao': equipamento.ultima_atualizacao.strftime('%d/%m/%Y %H:%M')
+            }
+        })
+    except Equipamento.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Equipamento não encontrado'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+@csrf_exempt
+@require_http_methods(['DELETE'])
+@login_required
+@user_passes_test(is_admin)
+def excluir_equipamento(request, id):
+    try:
+        equipamento = Equipamento.objects.get(id=id)
+        equipamento.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Equipamento excluído com sucesso'
+        })
+    except Equipamento.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Equipamento não encontrado'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+        
+def listar_equipamentos(request):
+    equipamentos = Equipamento.objects.all().values(
+        'id', 'nome', 'tipo', 'numero_serie', 'quantidade', 'status'
+    )
+    return JsonResponse({
+        'success': True,
+        'equipamentos': list(equipamentos)
     })

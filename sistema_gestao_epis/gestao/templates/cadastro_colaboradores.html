@@ -9,63 +9,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
-    <style>
-        /* Layout Principal */
-        body {
-            display: flex;
-            min-height: 100vh;
-            background-color: #f8f9fa;
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        /* Sidebar Styles */
-        .sidebar {
-            width: 250px;
-            background: #2c3e50;
-            color: white;
-            position: fixed;
-            height: 100vh;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        }
-        
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            margin-left: 250px;
-            padding: 20px;
-            transition: all 0.3s;
-        }
-        
-        /* Table Styles */
-        .table-responsive {
-            max-height: 600px;
-            overflow-y: auto;
-        }
-        
-        .status-badge {
-            padding: 0.35em 0.65em;
-            border-radius: 50px;
-            font-size: 0.8em;
-        }
-        .status-ativo { background-color: #e6f7ee; color: #28a745; }
-        .status-inativo { background-color: #fde8e8; color: #dc3545; }
-        
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                position: relative;
-                height: auto;
-            }
-            .main-content {
-                margin-left: 0;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'gestao/css/styles.css' %}">
+   
 </head>
 <body>
-
+  
 <!-- Sidebar -->
 <div class="sidebar">
     <div class="sidebar-header p-3">

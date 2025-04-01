@@ -483,23 +483,7 @@ canvas {
 }
 
 /* Footer do Sidebar */
-.sidebar-footer {
-    padding: 15px 20px;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    font-size: 0.8rem;
-    color: #bdc3c7;
-}
 
-.system-info {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-}
-
-.system-info i {
-    margin-right: 8px;
-    font-size: 0.6rem;
-}
 
 /* Responsividade */
 @media (max-width: 992px) {
@@ -512,3 +496,18 @@ canvas {
         transform: translateX(0);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

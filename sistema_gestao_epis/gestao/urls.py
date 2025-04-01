@@ -12,17 +12,28 @@ urlpatterns = [
     path('admin-dashboard/emprestimo/', views.emprestimo, name='emprestimo'),
     path('admin-dashboard/sair/', views.login_view, name='login'),
     path('admin-dashboard/controle_epi/', views.controle_epi, name='controle_epi'),
+     
     
     
-path('cadastro_colaboradores/', views.cadastro_colaboradores, name='cadastro_colaboradores'),
- path('colaboradores/cadastrar/', views.cadastrar_colaborador, name='cadastrar_colaborador'),
+
+    path('colaboradores/cadastrar/', views.cadastrar_colaborador, name='cadastrar_colaborador'),
     path('colaboradores/editar/', views.editar_colaborador, name='editar_colaborador'),
     path('colaboradores/excluir/<int:id>/', views.excluir_colaborador, name='excluir_colaborador'),
     path('colaboradores/obter/<int:id>/', views.obter_colaborador, name='obter_colaborador'),
-  path('colaboradores/listar/', views.listar_colaboradores, name='listar_colaboradores'),
+    path('colaboradores/listar/', views.listar_colaboradores, name='listar_colaboradores'),
+  
+     path('equipamentos/listar/', views.listar_equipamentos, name='listar_equipamentos'),
+    path('equipamentos/cadastrar/', views.cadastrar_epi, name='cadastrar_epi'),
+    path('equipamentos/editar/', views.editar_equipamento, name='editar_equipamento'),
+    path('equipamentos/excluir/<int:id>/', views.excluir_equipamento, name='excluir_equipamento'),
+    path('equipamentos/obter/<int:id>/', views.obter_equipamento, name='obter_equipamento'),
+    
+ path('equipamentos/obter/<int:id>/', views.obter_equipamento, name='obter_equipamento'),
+ path('editar_equipamento/<int:id>/', views.editar_equipamento, name='editar_equipamento'),
+ path('equipamentos/excluir/<int:id>/', views.excluir_equipamento, name='excluir_equipamento'),
 
 
     # Usuário comum
     path('user-dashboard/', views.user_dashboard, name='user_dashboard'),
-    path('user-dashboard/emprestimo/', views.emprestimo, name='emprestimo'),
+  
 ]
