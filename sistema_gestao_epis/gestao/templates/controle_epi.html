@@ -453,12 +453,89 @@
             }
         });
 
+//REGISTRAR EMPRESTIMO
+
+        $('#btnRegistrarEmprestimo').click(function() {
+            const formData = {
+                equipamento_id: $('#id_equipamento').val(),
+                colaborador_id: $('#id_colaborador').val(),
+                data_emprestimo: $('#id_data_emprestimo').val(),
+                data_devolucao_prevista: $('#id_data_devolucao_prevista').val(),
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            };
+        
+            $.ajax({
+                url: "{% url 'registrar_emprestimo' %}",
+                method: "POST",
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire('Sucesso!', response.message, 'success');
+                        // Atualizar a tabela ou recarregar a página
+                        location.reload();
+                    } else {
+                        Swal.fire('Erro!', response.message, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    Swal.fire('Erro!', xhr.responseJSON?.message || 'Erro no servidor', 'error');
+                }
+            });
+        });
+
         // Empréstimo rápido
         $('#confirmQuickLoan').on('click', function() {
             // Lógica para empréstimo rápido aqui
             alert('Empréstimo rápido registrado com sucesso!');
             $('#quickLoanModal').modal('hide');
         });
+
+        function registrarDevolucao(emprestimoId) {
+            Swal.fire({
+                title: 'Registrar Devolução',
+                html: `
+                    <div class="mb-3">
+                        <input type="checkbox" id="swal-danificado" class="form-check-input">
+                        <label for="swal-danificado" class="form-check-label">Equipamento danificado</label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="swal-observacoes" class="form-label">Observações</label>
+                        <textarea id="swal-observacoes" class="form-control"></textarea>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Confirmar',
+                preConfirm: () => {
+                    return {
+                        danificado: $('#swal-danificado').is(':checked'),
+                        observacoes: $('#swal-observacoes').val(),
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `/emprestimos/devolver/${emprestimoId}/`,
+                        method: "POST",
+                        data: result.value,
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire('Sucesso!', response.message, 'success');
+                                location.reload();
+                            } else {
+                                Swal.fire('Erro!', response.message, 'error');
+                            }
+                        },
+                        error: function(xhr) {
+                            Swal.fire('Erro!', xhr.responseJSON?.message || 'Erro no servidor', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
     </script>
+
+    
 </body>
 </html>

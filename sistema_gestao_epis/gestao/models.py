@@ -44,3 +44,26 @@ class Equipamento(models.Model):
     
     class Meta:
         db_table = 'gestao_equipamento'
+        
+from django.db import models
+        
+
+class Emprestimo(models.Model):
+    STATUS_CHOICES = [
+        ('Ativo', 'Ativo'),
+        ('Devolvido', 'Devolvido'),
+        ('Atrasado', 'Atrasado'),
+    ]
+    
+    equipamento = models.ForeignKey('Equipamento', on_delete=models.CASCADE)
+    colaborador = models.ForeignKey('Colaborador', on_delete=models.CASCADE)
+    data_emprestimo = models.DateField()
+    data_devolucao_prevista = models.DateField()
+    data_devolucao_real = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Ativo')
+    danificado = models.BooleanField(default=False)
+    observacoes = models.TextField(blank=True)
+    
+    
+    def __str__(self):
+        return f"{self.equipamento} - {self.colaborador}"

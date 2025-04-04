@@ -104,7 +104,7 @@
 
 
         <!-- Tabela -->
-        <div class="card shadow-sm">
+        <div class="card shadow-sm w-100">
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
@@ -488,6 +488,29 @@ $(document).ready(function() {
                         }
                     });
                 }
+            });
+        });
+
+        //Editar colaborador
+        $(document).on('click', '.btn-editar', function() {
+            const row = $(this).closest('tr');
+            const colaboradorId = row.data('id');
+            
+            $.ajax({
+                url: `/colaboradores/editar/${colaboradorId}/`,
+                method: 'GET',
+                success: function(response) {
+                    colaboradorForm.find('input[name="id"]').val(response.id);
+                    colaboradorForm.find('input[name="nome"]').val(response.nome);
+                    colaboradorForm.find('input[name="matricula"]').val(response.matricula);
+                    colaboradorForm.find('input[name="email"]').val(response.email);
+                    colaboradorForm.find('select[name="setor"]').val(response.setor);
+                    colaboradorForm.find('select[name="status"]').val(response.status);
+                    colaboradorForm.attr('data-mode', 'edit');
+                    colaboradorModal.modal('show');
+                },
+           
+                
             });
         });
     

@@ -1,6 +1,6 @@
 # gestao/forms.py
 from django import forms
-from .models import Colaborador, Equipamento
+from .models import Colaborador, Equipamento , Emprestimo
 
 class ColaboradorForm(forms.ModelForm):
     class Meta:
@@ -30,5 +30,20 @@ class EquipamentoForm(forms.ModelForm):
         self.fields['quantidade'].initial = 1
         self.fields['status'].initial = 'Disponível'
 
-
+class EmprestimoForm(forms.ModelForm):
+    class Meta:
+        model = Emprestimo
+        fields = ['colaborador', 'equipamento', 'data_emprestimo', 'data_devolucao', 'observacoes']
+        widgets = {
+            'data_emprestimo': forms.DateInput(attrs={'type': 'date'}),
+            'data_devolucao': forms.DateInput(attrs={'type': 'date'}),
+            'observacoes': forms.Textarea(attrs={'rows': 2}),
+        }
+        labels = {
+            'colaborador': 'Colaborador*',
+            'equipamento': 'Equipamento*',
+            'data_emprestimo': 'Data de Emprestimo*',
+            'data_devolucao': 'Data de Devolução*',
+            'observacoes': 'Observações'
+        }
                     
