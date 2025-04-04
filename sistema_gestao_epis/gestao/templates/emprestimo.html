@@ -331,6 +331,7 @@
             </div>
             <form id="modalEmprestimoForm" method="post">
                 {% csrf_token %}
+                <input type="hidden" id="modalResponsavel" name="responsavel_id" value="">
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -362,6 +363,13 @@
                         <div class="col-md-6">
                             <label for="modalDataDevolucaoPrevista" class="form-label">Previsão de Devolução *</label>
                             <input type="date" class="form-control" id="modalDataDevolucaoPrevista" name="data_devolucao_prevista" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Registrado por:</label>
+                            <div class="form-control bg-light">
+                                {{ request.user.get_full_name|default:request.user.username }}
+                                ({% if request.user.groups.exists %}{{ request.user.groups.first }}{% else %}Usuário{% endif %})
+                            </div>
                         </div>
                         <div class="col-12">
                             <label for="modalObservacoes" class="form-label">Observações</label>
@@ -572,37 +580,9 @@ $('.select2-equipamento').select2({
             return;
         }
     
+      
         $.ajax({
-            url: "/emprestimos/registrar/",  // Corrigido
-            method: "POST",
-            data: formData,
-            success: function(response) {
-                if (response.success) {
-                    Swal.fire({
-                        title: 'Sucesso!',
-                        text: response.message,
-                        icon: 'success'
-                    }).then(() => {
-                        $('#novoEmprestimoModal').modal('hide');
-                        carregarEmprestimos();
-                    });
-                } else {
-                    Swal.fire('Erro', response.message, 'error');
-                }
-            },
-            error: function(xhr) {
-                const errorMsg = xhr.responseJSON?.message || 'Erro no servidor';
-                Swal.fire('Erro', errorMsg, 'error');
-                console.error("Erro completo:", xhr.responseJSON);
-            },
-            complete: function() {
-                btn.prop('disabled', false).html('Salvar');
-            }
-        });
-
-
-        $.ajax({
-            url: "{% url 'registrar_emprestimo' %}/ %}",
+            url: "{% url 'registrar_emprestimo' %}",  // Correto
             method: "POST",
             data: formData,
             success: function(response) {
@@ -612,8 +592,8 @@ $('.select2-equipamento').select2({
                         text: 'Empréstimo registrado com sucesso',
                         icon: 'success'
                     }).then(() => {
-                        $('#novoEmprestimoModal').modal('hide');
-                        carregarEmprestimos();
+                      
+                        location.reload(); 
                     });
                 } else {
                     Swal.fire('Erro', response.message || 'Erro ao registrar empréstimo', 'error');
