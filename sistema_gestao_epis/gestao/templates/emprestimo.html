@@ -391,379 +391,422 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
 <script>
-$(document).ready(function() {
-    // Configuração para evitar conflitos com Bootstrap modais
-    $.fn.modal.Constructor.prototype._enforceFocus = function() {};
+    $(document).ready(function() {
+        // Configuração para evitar conflitos entre Select2 e Bootstrap Modais
+        $.fn.modal.Constructor.prototype._enforceFocus = function() {};
+        
+        // Carrega os empréstimos assim que a página é aberta
+        carregarEmprestimos();
     
-    // Inicializa Select2 para colaboradores
-    $('.select2-colaborador').select2({
-        theme: 'bootstrap-5',
-        placeholder: "Digite nome ou matrícula",
-        allowClear: true,
-        width: '100%',
-        dropdownParent: $('#novoEmprestimoModal'),
-        ajax: {
-            url: '{% url "buscar_colaboradores" %}',
-            dataType: 'json',
-            delay: 250,
-            data: function(params) {
-                return { query: params.term };
+        /**
+         * Função principal para carregar a lista de empréstimos via AJAX
+         */
+        function carregarEmprestimos() {
+            $.ajax({
+                url: "{% url 'listar_emprestimos' %}",  // URL da view Django
+                method: "GET",
+                // Mostra um spinner durante o carregamento
+                beforeSend: () => {
+                    $('#emprestimos-body').html('<tr><td colspan="6" class="text-center"><div class="spinner-border text-primary" role="status"></div></td></tr>');
+                },
+                // Sucesso na requisição
+                success: response => {
+                    const tbody = $('#emprestimos-body').empty();
+                    
+                    // Verifica se existem empréstimos para exibir
+                    if (response.emprestimos && response.emprestimos.length > 0) {
+                        // Para cada empréstimo, cria uma linha na tabela
+                        response.emprestimos.forEach(emp => {
+                            // Lógica para determinar a classe CSS baseada no status
+                            const statusClass = {
+                                'Ativo': 'bg-primary',
+                                'Devolvido': 'bg-success',
+                                'Atrasado': 'bg-danger',
+                                'Pendente': 'bg-warning'
+                            }[emp.status] || 'bg-secondary';
+                            
+                            // Adiciona ícone de alerta se o empréstimo estiver atrasado
+                            const atrasadoIcon = emp.status === 'Atrasado' ? 
+                                '<i class="fas fa-exclamation-triangle text-danger ms-1"></i>' : '';
+                            
+                            // Adiciona ícone de alerta se o equipamento estiver danificado
+                            const danificadoIcon = emp.danificado ?
+                                '<i class="fas fa-exclamation-circle ms-1 text-danger"></i>' : '';
+                            
+                            // Template da linha da tabela
+                            const row = `
+                            <tr data-id="${emp.id}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-hard-hat me-2 text-muted"></i>
+                                        <div>
+                                            <strong>${emp.equipamento.nome}</strong>
+                                            <div class="text-muted small">${emp.equipamento.tipo}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-user me-2 text-muted"></i>
+                                        <div>
+                                            <strong>${emp.colaborador.nome}</strong>
+                                            <div class="text-muted small">${emp.colaborador.matricula}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>${new Date(emp.data_emprestimo).toLocaleDateString('pt-BR')}</td>
+                                <td>
+                                    ${new Date(emp.data_devolucao_prevista).toLocaleDateString('pt-BR')}
+                                    ${atrasadoIcon}
+                                </td>
+                                <td>
+                                    <span class="badge ${statusClass}">${emp.status}</span>
+                                    ${danificadoIcon}
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-editar" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editarEmprestimoModal"
+                                            data-id="${emp.id}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    ${emp.status === 'Ativo' ? `
+                                    <button class="btn btn-sm btn-outline-success me-1 btn-devolver"
+                                            data-id="${emp.id}"
+                                            title="Registrar Devolução">
+                                        <i class="fas fa-undo"></i>
+                                    </button>` : ''}
+                                    <button class="btn btn-sm btn-outline-danger btn-excluir"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmarExclusaoModal"
+                                            data-id="${emp.id}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>`;
+                            tbody.append(row);
+                        });
+                    } else {
+                        // Mensagem quando não há empréstimos
+                        tbody.html('<tr><td colspan="6" class="text-center text-muted py-4">Nenhum empréstimo encontrado</td></tr>');
+                    }
+                },
+                // Tratamento de erros na requisição
+                error: () => {
+                    $('#emprestimos-body').html('<tr><td colspan="6" class="text-center text-danger py-4">Erro ao carregar empréstimos</td></tr>');
+                }
+            });
+        }
+    
+        /**
+         * Configuração do Select2 para campo de colaboradores
+         * - Busca assíncrona por nome ou matrícula
+         * - Estilo compatível com Bootstrap 5
+         */
+        $('.select2-colaborador').select2({
+            theme: 'bootstrap-5',
+            placeholder: "Digite nome ou matrícula",
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#novoEmprestimoModal'),  // Corrige posicionamento dentro do modal
+            ajax: {
+                url: '{% url "buscar_colaboradores" %}',
+                dataType: 'json',
+                delay: 250,  // Atraso para evitar muitas requisições
+                data: params => ({ query: params.term }),
+                processResults: data => ({
+                    results: data.map(item => ({
+                        id: item.id,
+                        text: `${item.nome} (${item.matricula}) - ${item.setor || 'Sem setor'}`
+                    }))
+                }),
+                cache: true
             },
-            processResults: function(data) {
-                return {
-                    results: $.map(data, function(item) {
-                        return {
-                            id: item.id,
-                            text: `${item.nome} (${item.matricula}) - ${item.setor || 'Sem setor'}`
-                        };
-                    })
-                };
-            },
-            cache: true
-        },
-        minimumInputLength: 2
-    });
-// Inicializa Select2 para equipamentos com busca AJAX
-$('.select2-equipamento').select2({
-    theme: 'bootstrap-5',
-    placeholder: "Digite nome ou tipo do equipamento",
-    allowClear: true,
-    width: '100%',
-    dropdownParent: $('#novoEmprestimoModal'),
-    ajax: {
-        url: '{% url "buscar_equipamentos" %}',  // Você precisará criar esta URL
-        dataType: 'json',
-        delay: 250,
-        data: function(params) {
-            return { 
-                query: params.term,
-                disponivel: true  // Opcional: buscar apenas disponíveis
-            };
-        },
-        processResults: function(data) {
-            return {
-                results: $.map(data, function(item) {
-                    return {
+            minimumInputLength: 2  // Mínimo de caracteres para iniciar busca
+        });
+    
+        /**
+         * Configuração do Select2 para campo de equipamentos
+         * - Busca assíncrona por nome ou tipo
+         * - Mostra status de disponibilidade
+         */
+        $('.select2-equipamento').select2({
+            theme: 'bootstrap-5',
+            placeholder: "Digite nome ou tipo do equipamento",
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#novoEmprestimoModal'),
+            ajax: {
+                url: '{% url "buscar_equipamentos" %}',
+                dataType: 'json',
+                delay: 250,
+                data: params => ({
+                    query: params.term,
+                    disponivel: true  // Filtra apenas equipamentos disponíveis
+                }),
+                processResults: data => ({
+                    results: data.map(item => ({
                         id: item.id,
                         text: `${item.nome} - ${item.tipo}`,
                         disponivel: item.disponivel
-                    };
-                })
-            };
+                    }))
+                }),
+                cache: true
+            },
+            minimumInputLength: 1,
+            // Formatação dos resultados na lista suspensa
+            templateResult: state => {
+                if (!state.id) return state.text;
+                const $state = $(`<span>${state.text}</span>`);
+                // Destaca equipamentos indisponíveis em vermelho
+                $state.addClass(state.disponivel === false ? 'text-danger' : 'text-success');
+                $state.append(`<span class="badge bg-${state.disponivel === false ? 'danger' : 'success'} ms-2">${
+                    state.disponivel === false ? 'Indisponível' : 'Disponível'
+                }</span>`);
+                return $state;
+            },
+            // Formatação do item selecionado
+            templateSelection: state => !state.id ? state.text : state.text.split('(')[0].trim()
+        });
+    
+        /**
+         * Configuração do modal de novo empréstimo
+         * - Limpa os campos quando o modal é aberto
+         */
+        $('#novoEmprestimoModal').on('show.bs.modal', () => {
+            $('#modalEmprestimoForm')[0].reset();
+            $('#modalColaborador').val(null).trigger('change');
+            $('#modalEquipamento').val(null).trigger('change');
+            // Define data atual como padrão para o empréstimo
+            $('#modalDataEmprestimo').val(new Date().toISOString().split('T')[0]);
+        });
+    
+      /// Submit do formulário (criação e edição de empréstimos)
+$('#modalEmprestimoForm').submit(function(e) {
+    e.preventDefault();
+
+    const isEditMode = $(this).attr('data-mode') === 'edit';
+    const url = isEditMode ? "{% url 'editar_emprestimo' %}" : "{% url 'registrar_emprestimo' %}";
+    const method = isEditMode ? 'PUT' : 'POST';
+
+    $.ajax({
+        url: url,
+        method: method,
+        data: $(this).serialize(),
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+        success: function(response) {
+            if (!response.success) {
+                Swal.fire('Erro', response.message || 'Operação falhou', 'error');
+                return;
+            }
+
+            $('#novoEmprestimoModal').modal('hide');
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open');
+
+            if (isEditMode) {
+                const row = $(`tr[data-id="${response.id}"]`);
+                row.find('td:eq(0)').text(response.colaborador);
+                row.find('td:eq(1)').text(response.equipamento);
+                row.find('td:eq(2)').text(response.data_emprestimo);
+                row.find('td:eq(3)').text(response.status);
+            } else {
+                const newRow = `
+                <tr data-id="${response.id}">
+                    <td>${response.colaborador}</td>
+                    <td>${response.equipamento}</td>
+                    <td>${response.data_emprestimo}</td>
+                    <td>${response.status}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary me-1 btn-editar-emprestimo">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger btn-excluir-emprestimo">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>`;
+                $('tbody').prepend(newRow);
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso!',
+                text: isEditMode ? 'Empréstimo atualizado com sucesso!' : 'Empréstimo registrado com sucesso!',
+            });
         },
-        cache: true
-    },
-    minimumInputLength: 1,
-    templateResult: function(state) {
-        if (!state.id) return state.text;
-        
-        const $state = $(`<span>${state.text}</span>`);
-        if (state.disponivel === false) {
-            $state.addClass('text-danger');
-            $state.append('<span class="badge bg-danger ms-2">Indisponível</span>');
-        } else {
-            $state.addClass('text-success');
-            $state.append('<span class="badge bg-success ms-2">Disponível</span>');
+        error: function(xhr) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: xhr.responseJSON?.message || 'Erro no servidor'
+            });
         }
-        return $state;
-    },
-    templateSelection: function(state) {
-        if (!state.id) return state.text;
-        // Mostra apenas o nome quando selecionado
-        return state.text.split('(')[0].trim();
-    }
+    });
 });
 
-    // Função para carregar empréstimos
-    function carregarEmprestimos() {
-        $.ajax({
-            url: "{% url 'listar_emprestimos' %}",
-            method: "GET",
-            beforeSend: function() {
-                $('tbody').html('<tr><td colspan="6" class="text-center"><div class="spinner-border text-primary" role="status"></div></td></tr>');
-            },
-            success: function(response) {
-                if (response.success && response.emprestimos) {
-                    const tbody = $('tbody').empty();
-                    
-                    response.emprestimos.forEach(emp => {
-                        const statusClass = {
-                            'Ativo': 'bg-primary',
-                            'Devolvido': 'bg-success',
-                            'Atrasado': 'bg-danger',
-                            'Pendente': 'bg-warning'
-                        }[emp.status] || 'bg-secondary';
-                        
-                        const atrasadoIcon = emp.status === 'Atrasado' ? 
-                            '<i class="fas fa-exclamation-triangle text-danger ms-1"></i>' : '';
-                        
-                        const row = `
-                        <tr data-id="${emp.id}">
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-hard-hat me-2 text-muted"></i>
-                                    <div>
-                                        <strong>${emp.equipamento.nome}</strong>
-                                        <div class="text-muted small">${emp.equipamento.tipo}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-user me-2 text-muted"></i>
-                                    <div>
-                                        <strong>${emp.colaborador.nome}</strong>
-                                        <div class="text-muted small">${emp.colaborador.matricula}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>${new Date(emp.data_emprestimo).toLocaleDateString('pt-BR')}</td>
-                            <td>
-                                ${new Date(emp.data_devolucao_prevista).toLocaleDateString('pt-BR')}
-                                ${atrasadoIcon}
-                            </td>
-                            <td>
-                                <span class="badge ${statusClass}">${emp.status}</span>
-                            </td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary me-1 btn-editar" data-id="${emp.id}">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                ${emp.status === 'Ativo' ? `
-                                <button class="btn btn-sm btn-outline-success me-1 btn-devolver" data-id="${emp.id}">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                                ` : ''}
-                                <button class="btn btn-sm btn-outline-danger btn-excluir" data-id="${emp.id}">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </td>
-                        </tr>`;
-                        tbody.append(row);
-                    });
-                }
-            },
-            error: function() {
-                Swal.fire("Erro", "Não foi possível carregar os empréstimos", "error");
-            }
-        });
-    }
-
-    // Configura o modal de novo empréstimo
-    $('#novoEmprestimoModal').on('show.bs.modal', function() {
-        $('#modalEmprestimoForm')[0].reset();
-        $('#modalDataEmprestimo').val(new Date().toISOString().split('T')[0]);
-    });
-
-    // Submit do formulário de empréstimo
-    $('#modalEmprestimoForm').on('submit', function(e) {
-        e.preventDefault();
-        const btn = $('#modalSubmitBtn');
-        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Salvando...');
-    
-        const formData = {
-            equipamento_id: $('#modalEquipamento').val(),
-            colaborador_id: $('#modalColaborador').val(),
-            data_emprestimo: $('#modalDataEmprestimo').val(),
-            data_devolucao_prevista: $('#modalDataDevolucaoPrevista').val(),
-            observacoes: $('#modalObservacoes').val(),
-            csrfmiddlewaretoken: $('[name=csrfmiddlewaretoken]').val()  // Corrigido
-        };
-    
-        // Validação
-        if (!formData.equipamento_id || !formData.colaborador_id || 
-            !formData.data_emprestimo || !formData.data_devolucao_prevista) {
-            Swal.fire('Atenção', 'Preencha todos os campos obrigatórios', 'warning');
-            btn.prop('disabled', false).html('Salvar');
-            return;
-        }
-    
-      
-        $.ajax({
-            url: "{% url 'registrar_emprestimo' %}",  // Correto
-            method: "POST",
-            data: formData,
-            success: function(response) {
-                if (response.success) {
-                    Swal.fire({
-                        title: 'Sucesso!',
-                        text: 'Empréstimo registrado com sucesso',
-                        icon: 'success'
-                    }).then(() => {
-                      
-                        location.reload(); 
-                    });
-                } else {
-                    Swal.fire('Erro', response.message || 'Erro ao registrar empréstimo', 'error');
-                }
-            },
-            error: function(xhr) {
-                Swal.fire('Erro', xhr.responseJSON?.message || 'Erro no servidor', 'error');
-            },
-            complete: function() {
-                btn.prop('disabled', false).html('Salvar');
-            }
-        });
-    });
-
-    // Editar empréstimo
-    $(document).on('click', '.btn-editar', function() {
-        const emprestimoId = $(this).data('id');
+                
         
-        $.ajax({
-            url: `/emprestimos/obter/${emprestimoId}/`,
-            method: 'GET',
-            success: function(response) {
-                if (response.success) {
-                    // Preenche o modal de edição
-                    $('#editarEmprestimoModal #emprestimo_id').val(response.id);
-                    $('#editarEmprestimoModal #equipamento_id').val(response.equipamento_id).trigger('change');
-                    $('#editarEmprestimoModal #colaborador_id').val(response.colaborador_id).trigger('change');
-                    $('#editarEmprestimoModal #data_emprestimo').val(response.data_emprestimo);
-                    $('#editarEmprestimoModal #data_devolucao_prevista').val(response.data_devolucao_prevista);
-                    $('#editarEmprestimoModal #observacoes').val(response.observacoes || '');
-                    
-                    $('#editarEmprestimoModal').modal('show');
-                } else {
-                    Swal.fire('Erro', response.message || 'Erro ao carregar dados', 'error');
+        /**
+         * Evento para editar empréstimo
+         */
+        $(document).on('click', '.btn-editar', function() {
+            const emprestimoId = $(this).data('id');
+            // Busca os dados do empréstimo
+            $.ajax({
+                url: `/emprestimos/obter/${emprestimoId}/`,
+                method: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        // Preenche o modal de edição com os dados
+                        $('#editarEmprestimoModal #emprestimo_id').val(response.id);
+                        $('#editarEmprestimoModal #equipamento_id').val(response.equipamento_id).trigger('change');
+                        $('#editarEmprestimoModal #colaborador_id').val(response.colaborador_id).trigger('change');
+                        $('#editarEmprestimoModal #data_emprestimo').val(response.data_emprestimo);
+                        $('#editarEmprestimoModal #data_devolucao_prevista').val(response.data_devolucao_prevista);
+                        $('#editarEmprestimoModal #observacoes').val(response.observacoes || '');
+                        // Abre o modal
+                        $('#editarEmprestimoModal').modal('show');
+                    } else {
+                        Swal.fire('Erro', response.message || 'Erro ao carregar dados', 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Erro', 'Falha ao carregar dados do empréstimo', 'error');
                 }
-            },
-            error: function() {
-                Swal.fire('Erro', 'Falha ao carregar dados do empréstimo', 'error');
-            }
+            });
         });
-    });
-
-    // Registrar devolução
-    $(document).on('click', '.btn-devolver', function() {
-        const emprestimoId = $(this).data('id');
-        
-        Swal.fire({
-            title: 'Registrar Devolução',
-            html: `
-                <div class="mb-3">
-                    <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input" id="danificado">
-                        Equipamento danificado?
-                    </label>
-                </div>
-                <div class="mb-3">
-                    <label for="observacoes" class="form-label">Observações</label>
-                    <textarea id="observacoes" class="form-control" rows="3"></textarea>
-                </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: 'Registrar Devolução',
-            preConfirm: () => {
-                return {
+    
+        /**
+         * Evento para registrar devolução
+         */
+        $(document).on('click', '.btn-devolver', function() {
+            const emprestimoId = $(this).data('id');
+            // Modal de confirmação com campos adicionais
+            Swal.fire({
+                title: 'Registrar Devolução',
+                html: `
+                    <div class="mb-3">
+                        <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" id="danificado">
+                            Equipamento danificado?
+                        </label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea id="observacoes" class="form-control" rows="3"></textarea>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Registrar Devolução',
+                preConfirm: () => ({
                     danificado: $('#danificado').is(':checked'),
                     observacoes: $('#observacoes').val()
+                })
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Envia os dados da devolução
+                    $.ajax({
+                        url: "{% url 'registrar_devolucao' %}",
+                        method: 'POST',
+                        data: {
+                            emprestimo_id: emprestimoId,
+                            danificado: result.value.danificado,
+                            observacoes: result.value.observacoes,
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire('Sucesso!', 'Devolução registrada com sucesso', 'success');
+                                // Atualiza a lista
+                                carregarEmprestimos();
+                            } else {
+                                Swal.fire('Erro', response.message || 'Erro ao registrar devolução', 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Erro', 'Falha ao registrar devolução', 'error');
+                        }
+                    });
                 }
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: "{% url 'registrar_devolucao' %}",
-                    method: 'POST',
-                    data: {
-                        emprestimo_id: emprestimoId,
-                        danificado: result.value.danificado,
-                        observacoes: result.value.observacoes,
-                        csrfmiddlewaretoken: '{{ csrf_token }}'
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            Swal.fire('Sucesso!', 'Devolução registrada com sucesso', 'success');
-                            carregarEmprestimos();
-                        } else {
-                            Swal.fire('Erro', response.message || 'Erro ao registrar devolução', 'error');
-                        }
-                    },
-                    error: function() {
-                        Swal.fire('Erro', 'Falha ao registrar devolução', 'error');
-                    }
-                });
-            }
+            });
         });
-    });
-
-    // Excluir empréstimo
-    $(document).on('click', '.btn-excluir', function() {
-        const emprestimoId = $(this).data('id');
-        
-        Swal.fire({
-            title: 'Confirmar exclusão?',
-            text: "Esta ação não pode ser desfeita!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sim, excluir!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: `/emprestimos/excluir/${emprestimoId}/`,
-                    method: 'DELETE',
-                    headers: {'X-CSRFToken': '{{ csrf_token }}'},
-                    success: function(response) {
-                        if (response.success) {
-                            Swal.fire('Excluído!', 'Empréstimo removido com sucesso', 'success');
-                            carregarEmprestimos();
-                        } else {
-                            Swal.fire('Erro!', response.message || 'Erro ao excluir', 'error');
-                        }
-                    },
-                    error: function() {
-                        Swal.fire('Erro!', 'Falha na comunicação com o servidor', 'error');
-                    }
-                });
-            }
-        });
-    });
-
-    // Filtro de pesquisa
-    $('#barraPesquisa').on('keyup', function() {
-        const termo = $(this).val().toLowerCase();
-        
-        if (termo === '') {
-            $('tbody tr').show();
-            return;
-        }
-        
-        $('tbody tr').each(function() {
-            const equipamento = $(this).find('td:eq(0) strong').text().toLowerCase();
-            const colaborador = $(this).find('td:eq(1) strong').text().toLowerCase();
-            const matricula = $(this).find('td:eq(1) .small').text().toLowerCase();
-            const status = $(this).find('.badge').text().toLowerCase();
-            
-            const corresponde = 
-                equipamento.includes(termo) || 
-                colaborador.includes(termo) || 
-                matricula.includes(termo) || 
-                status.includes(termo);
-            
-            $(this).toggle(corresponde);
-        });
-    });
     
-    // Botão para limpar pesquisa
-    $('#limparPesquisa').click(function() {
-        $('#barraPesquisa').val('').trigger('keyup');
-    });
+        /**
+         * Evento para excluir empréstimo
+         */
+        $(document).on('click', '.btn-excluir', function() {
+            const emprestimoId = $(this).data('id');
+            // Confirmação antes de excluir
+            Swal.fire({
+                title: 'Confirmar exclusão?',
+                text: "Esta ação não pode ser desfeita!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sim, excluir!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Requisição DELETE para excluir
+                    $.ajax({
+                        url: `/emprestimos/excluir/${emprestimoId}/`,
+                        method: 'DELETE',
+                        headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire('Excluído!', 'Empréstimo removido com sucesso', 'success');
+                                // Atualiza a lista
+                                carregarEmprestimos();
+                            } else {
+                                Swal.fire('Erro!', response.message || 'Erro ao excluir', 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Erro!', 'Falha na comunicação com o servidor', 'error');
+                        }
+                    });
+                }
+            });
+        });
     
-    // Focar na barra ao pressionar Ctrl+F
-    $(document).on('keydown', function(e) {
-        if (e.ctrlKey && e.key === 'f') {
-            e.preventDefault();
-            $('#barraPesquisa').focus();
-        }
+        /**
+         * Filtro de pesquisa em tempo real
+         */
+        $('#barraPesquisa').on('keyup', function() {
+            const termo = $(this).val().toLowerCase();
+            // Filtra as linhas da tabela conforme o termo digitado
+            $('tbody tr').each(function() {
+                const equipamento = $(this).find('td:eq(0) strong').text().toLowerCase();
+                const colaborador = $(this).find('td:eq(1) strong').text().toLowerCase();
+                const matricula = $(this).find('td:eq(1) .small').text().toLowerCase();
+                const status = $(this).find('.badge').text().toLowerCase();
+                const corresponde = equipamento.includes(termo) || 
+                                  colaborador.includes(termo) || 
+                                  matricula.includes(termo) || 
+                                  status.includes(termo);
+                $(this).toggle(corresponde);
+            });
+        });
+    
+        // Botão para limpar a pesquisa
+        $('#limparPesquisa').click(function() {
+            $('#barraPesquisa').val('').trigger('keyup');
+        });
+    
+        // Atalho Ctrl+F para focar no campo de pesquisa
+        $(document).on('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                $('#barraPesquisa').focus();
+            }
+        });
+    
+        // Carrega os empréstimos ao iniciar
+        carregarEmprestimos();
     });
-
-    // Carrega os dados iniciais
-    carregarEmprestimos();
-});
-</script>
+    </script>
+    
 </body>
 </html>

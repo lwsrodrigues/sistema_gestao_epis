@@ -45,6 +45,7 @@ urlpatterns = [
  path('editar_equipamento/<int:id>/', views.editar_equipamento, name='editar_equipamento'),
  path('equipamentos/excluir/<int:id>/', views.excluir_equipamento, name='excluir_equipamento'),
     path('buscar-equipamentos/', views.buscar_equipamentos, name='buscar_equipamentos'),
+      path('criar_emprestimo/', views.cadastrar_emprestimo, name='criar_emprestimo'),
 
     # Usuário comum
     path('user-dashboard/', views.user_dashboard, name='user_dashboard'),
