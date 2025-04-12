@@ -318,7 +318,29 @@
     </div>
 </div>
 
-
+<!-- Modal Editar Empréstimo -->
+<div class="modal fade" id="editarEmprestimoModal" tabindex="-1" aria-labelledby="editarEmprestimoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editarEmprestimoModalLabel">
+                    <i class="fas fa-edit me-2"></i>Editar Empréstimo
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editarEmprestimoForm">
+                <input type="hidden" id="emprestimo_id" name="emprestimo_id">
+                <div class="modal-body">
+                    <!-- O conteúdo será carregado via AJAX -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
     
 <!-- Modal Novo Empréstimo -->
 <!-- Modal Novo Empréstimo -->
@@ -387,6 +409,9 @@
         </div>
     </div>
 </div>
+
+
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
@@ -481,12 +506,7 @@
                                                                         title="Registrar Devolução">
                                                                         <i class="fas fa-undo"></i>
                                                                         </button>` : ''}
-                                                                        <button class="btn btn-sm btn-outline-danger btn-excluir"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#confirmarExclusaoModal"
-                                            data-id="${emp.id}">
-                                            <i class="fas fa-trash-alt"></i>
-                                            </button>
+                                                                       
                                             </td>
                                             </tr>`;
                                             tbody.append(row);
@@ -553,7 +573,7 @@
                 processResults: data => ({
                     results: data.map(item => ({
                         id: item.id,
-                        text: `${item.nome} - ${item.tipo}`,
+                        text: `${item.nome} - ${item.quantidade}`,
                         disponivel: item.disponivel
                     }))
                 }),
@@ -572,7 +592,10 @@
                 return $state;
             },
             // Formatação do item selecionado
-            templateSelection: state => !state.id ? state.text : state.text.split('(')[0].trim()
+            templateSelection: state => {
+                if (!state.id) return state.text;
+                return `${state.text}`; // Mantenha o nome + quantidade
+            }
         });
     
         /**
@@ -604,6 +627,7 @@ $('#modalEmprestimoForm').submit(function(e) {
                 Swal.fire('Erro', response.message || 'Operação falhou', 'error');
                 return;
             }
+            console.log('Ola mundo')
 
             $('#novoEmprestimoModal').modal('hide');
             $('.modal-backdrop').remove();
@@ -639,108 +663,171 @@ $('#modalEmprestimoForm').submit(function(e) {
                 title: 'Sucesso!',
                 text: isEditMode ? 'Empréstimo atualizado com sucesso!' : 'Empréstimo registrado com sucesso!',
             });
+            carregarEmprestimos();
         },
+        
         error: function(xhr) {
             Swal.fire({
                 icon: 'error',
                 title: 'Erro',
                 text: xhr.responseJSON?.message || 'Erro no servidor'
             });
+           
         }
+     
     });
 });
 
+
                 
         
-        /**
-         * Evento para editar empréstimo
-         */
-        $(document).on('click', '.btn-editar', function() {
-            const emprestimoId = $(this).data('id');
-            // Busca os dados do empréstimo
-            $.ajax({
-                url: `/emprestimos/obter/${emprestimoId}/`,
-                method: 'GET',
-                success: function(response) {
-                    if (response.success) {
-                        // Preenche o modal de edição com os dados
-                        $('#editarEmprestimoModal #emprestimo_id').val(response.id);
-                        $('#editarEmprestimoModal #equipamento_id').val(response.equipamento_id).trigger('change');
-                        $('#editarEmprestimoModal #colaborador_id').val(response.colaborador_id).trigger('change');
-                        $('#editarEmprestimoModal #data_emprestimo').val(response.data_emprestimo);
-                        $('#editarEmprestimoModal #data_devolucao_prevista').val(response.data_devolucao_prevista);
-                        $('#editarEmprestimoModal #observacoes').val(response.observacoes || '');
-                        // Abre o modal
-                        $('#editarEmprestimoModal').modal('show');
-                    } else {
-                        Swal.fire('Erro', response.message || 'Erro ao carregar dados', 'error');
-                    }
-                },
-                error: function() {
-                    Swal.fire('Erro', 'Falha ao carregar dados do empréstimo', 'error');
-                }
-            });
-        });
+$(document).on('click', '.btn-editar', function() {
+    const emprestimoId = $(this).data('id');
+    
+    // Configuração do modal antes de abrir
+    $('#editarEmprestimoModal .modal-body').html(`
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+            <p class="mt-2">Carregando dados do empréstimo...</p>
+        </div>
+    `);
+    
+    // Abre o modal imediatamente
+    $('#editarEmprestimoModal').modal('show');
+    
+    // Faz a requisição AJAX
+    $.ajax({
+        url: `/emprestimos/obter/${emprestimoId}/`,  // Verifique esta URL
+        method: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            console.log("Resposta recebida:", response);  // Debug
+            
+            if (response.success && response.emprestimo) {
+                const emp = response.emprestimo;
+                
+                // Preenche o formulário do modal
+                $('#editarEmprestimoForm #emprestimo_id').val(emp.id);
+                
+                // Equipamento
+                const equipamentoSelect = $('#editarEmprestimoForm #equipamento_id');
+                equipamentoSelect.empty();
+                equipamentoSelect.append(new Option(
+                    `${emp.equipamento.nome} - ${emp.equipamento.tipo}`,
+                    emp.equipamento.id,
+                    true,
+                    true
+                ));
+                equipamentoSelect.trigger('change');
+                
+                // Colaborador
+                const colaboradorSelect = $('#editarEmprestimoForm #colaborador_id');
+                colaboradorSelect.empty();
+                colaboradorSelect.append(new Option(
+                    `${emp.colaborador.nome} (${emp.colaborador.matricula})`,
+                    emp.colaborador.id,
+                    true,
+                    true
+                ));
+                colaboradorSelect.trigger('change');
+                
+                // Datas e observações
+                $('#editarEmprestimoForm #data_emprestimo').val(emp.data_emprestimo);
+                $('#editarEmprestimoForm #data_devolucao_prevista').val(emp.data_devolucao_prevista);
+                $('#editarEmprestimoForm #observacoes').val(emp.observacoes || '');
+                
+                // Atualiza o corpo do modal com o formulário
+                $('#editarEmprestimoModal .modal-body').html($('#editarEmprestimoForm .modal-body').html());
+                
+            } else {
+                $('#editarEmprestimoModal').modal('hide');
+                Swal.fire('Erro', response.message || 'Dados do empréstimo não encontrados', 'error');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Erro na requisição:", status, error);  // Debug
+            $('#editarEmprestimoModal').modal('hide');
+            
+            let errorMsg = 'Falha ao carregar dados do empréstimo';
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMsg += ': ' + xhr.responseJSON.message;
+            }
+            
+            Swal.fire('Erro', errorMsg, 'error');
+        }
+    });
+});
     
         /**
          * Evento para registrar devolução
          */
-        $(document).on('click', '.btn-devolver', function() {
-            const emprestimoId = $(this).data('id');
-            
-            // Modal de confirmação com campos adicionais
+       $(document).on('click', '.btn-devolver', function () {
+    const emprestimoId = $(this).data('id');
 
-
-            Swal.fire({
-                title: 'Registrar Devolução',
-                html: `
-                    <div class="mb-3">
-                        <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" id="danificado">
-                            Equipamento danificado?
-                        </label>
-                    </div>
-                    <div class="mb-3">
-                        <label for="observacoes" class="form-label">Observações</label>
-                        <textarea id="observacoes" class="form-control" rows="3"></textarea>
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Registrar Devolução',
-                preConfirm: () => ({
-                    danificado: $('#danificado').is(':checked'),
-                    observacoes: $('#observacoes').val()
-                })
-            }).then((result) => {
-                if (result.isConfirmed) {
-
-
-                    // Envia os dados da devolução
-                    $.ajax({
-                        url: "{% url 'registrar_devolucao' %}",
-                        method: 'POST',
-                        data: {
-                            emprestimo_id: emprestimoId,
-                            danificado: result.value.danificado,
-                            observacoes: result.value.observacoes,
-                            csrfmiddlewaretoken: '{{ csrf_token }}'
-                        },
-                        success: function(response) {
-                            if (response.success) {
-                                Swal.fire('Sucesso!', 'Devolução registrada com sucesso', 'success');
-                                // Atualiza a lista
-                                carregarEmprestimos();
-                            } else {
-                                Swal.fire('Erro', response.message || 'Erro ao registrar devolução', 'error');
-                            }
-                        },
-                        error: function() {
-                            Swal.fire('Erro', 'Falha ao registrar devolução', 'error');
-                        }
-                    });
+    Swal.fire({
+        title: 'Registrar Devolução',
+        html: `
+            <div class="mb-3">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" id="danificado">
+                    Equipamento danificado?
+                </label>
+            </div>
+            <div class="mb-3" id="motivo-dano-group" style="display:none">
+                <label for="motivo_dano" class="form-label">Motivo do Dano</label>
+                <textarea id="motivo_dano" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="observacoes" class="form-label">Observações</label>
+                <textarea id="observacoes" class="form-control" rows="3"></textarea>
+            </div>
+        `,
+        didOpen: () => {
+            $('#danificado').on('change', function () {
+                if (this.checked) {
+                    $('#motivo-dano-group').show();
+                } else {
+                    $('#motivo-dano-group').hide();
                 }
             });
-        });
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Registrar Devolução',
+        preConfirm: () => ({
+            danificado: $('#danificado').is(':checked'),
+            motivo_dano: $('#motivo_dano').val(),
+            observacoes: $('#observacoes').val()
+        })
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "{% url 'registrar_devolucao' %}",
+                method: 'POST',
+                data: {
+                    emprestimo_id: emprestimoId,
+                    danificado: result.value.danificado,
+                    motivo_dano: result.value.motivo_dano,
+                    observacoes: result.value.observacoes,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire('Sucesso!', 'Devolução registrada com sucesso', 'success');
+                        carregarEmprestimos();
+                    } else {
+                        Swal.fire('Erro', response.message || 'Erro ao registrar devolução', 'error');
+                    }
+                },
+                error: function (xhr) {
+                    Swal.fire('Erro', xhr.responseJSON?.message || 'Falha ao registrar devolução', 'error');
+                }
+            });
+        }
+    });
+});
+
     
         /**
          * Evento para excluir empréstimo

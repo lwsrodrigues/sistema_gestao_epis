@@ -17,6 +17,8 @@ from datetime import datetime, date
 import logging
 logger = logging.getLogger(__name__)
 from django.views.decorators.http import require_http_methods, require_POST
+from django.utils import timezone
+
 
 # Verifica se o usuário é administrador
 def is_admin(user):
@@ -147,11 +149,13 @@ def cadastrar_colaborador(request):
         })
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=400)
-@require_http_methods(["PUT"])
+    
+@csrf_exempt
+@require_http_methods(["POST"])
 def editar_colaborador(request):
-    import pdb; pdb.set_trace()
     try:
-        colaborador_id = request.PUT.get('id')
+        colaborador_id = request.POST.get('id')
+        print(colaborador_id)
         if not colaborador_id:
             return JsonResponse({'success': False, 'message': 'ID do colaborador não fornecido'}, status=400)
             
@@ -163,7 +167,6 @@ def editar_colaborador(request):
         colaborador.setor = request.POST.get('setor')
         colaborador.status = request.POST.get('status')
         colaborador.observacoes = request.POST.get('observacoes', '')
-        
         colaborador.save()        
         return JsonResponse({'success': True})
     except Exception as e:
@@ -226,6 +229,7 @@ def cadastrar_epi(request):
                     'nome': novo_epi.nome,
                     'tipo': novo_epi.tipo,
                     'status': novo_epi.status,
+                    'quantidade': novo_epi.quantidade,
                     'data_cadastro': novo_epi.data_cadastro.strftime('%d/%m/%Y %H:%M') if hasattr(novo_epi, 'data_cadastro') else ''
                 }
             })
@@ -354,71 +358,73 @@ def listar_equipamentos(request):
         'equipamentos': list(equipamentos)
     })
     
-    
 @login_required
 @require_POST
 def cadastrar_emprestimo(request):
     try:
         data = request.POST
-        
-        # Campos obrigatórios (sem responsavel_id)
+
         required_fields = ['equipamento_id', 'colaborador_id', 'data_emprestimo', 'data_devolucao_prevista']
         if not all(data.get(field) for field in required_fields):
             return JsonResponse({
                 'success': False, 
                 'message': 'Preencha todos os campos obrigatórios'
-            }, status=400)  # <<< CORREÇÃO AQUI (status=400)
-        
+            }, status=400)
+
         try:
             equipamento = Equipamento.objects.get(id=data['equipamento_id'])
-            if Emprestimo.objects.filter(equipamento=equipamento, status='Ativo').exists():
+
+            if equipamento.quantidade < 1:
                 return JsonResponse({
-                    'success': False, 
-                    'message': 'Equipamento já está emprestado'
-                }, status=400)  # <<< CORREÇÃO AQUI (status=400)
-                
+                    'success': False,
+                    'message': 'Equipamento indisponível para empréstimo. Quantidade insuficiente.'
+                }, status=400)
+
             colaborador = Colaborador.objects.get(id=data['colaborador_id'])
-            
+
         except Equipamento.DoesNotExist:
             return JsonResponse({
                 'success': False, 
                 'message': 'Equipamento não encontrado'
-            }, status=404)  # <<< CORREÇÃO AQUI (status=404)
+            }, status=404)
+
         except Colaborador.DoesNotExist:
             return JsonResponse({
                 'success': False, 
-                'message': 'Colaborador não  encontrado'
-            }, status=404)  # <<< CORREÇÃO AQUI (status=404)
-        
-        # Conversão de datas
+                'message': 'Colaborador não encontrado'
+            }, status=404)
+
+        # Conversão das datas
         try:
             data_emprestimo = datetime.strptime(data['data_emprestimo'], '%Y-%m-%d').date()
             data_devolucao = datetime.strptime(data['data_devolucao_prevista'], '%Y-%m-%d').date()
-            
+
             if data_devolucao <= data_emprestimo:
                 return JsonResponse({
                     'success': False, 
                     'message': 'Data de devolução deve ser posterior à data de empréstimo'
-                }, status=400)  # <<< CORREÇÃO AQUI (status=400)
-                
+                }, status=400)
+
         except ValueError as e:
             return JsonResponse({
                 'success': False, 
                 'message': f'Formato de data inválido. Use YYYY-MM-DD. Erro: {str(e)}'
-            }, status=400)  # <<< CORREÇÃO AQUI (status=400)
-        
-        # Criação do empréstimo
+            }, status=400)
+
+        # Criação do empréstimo e atualização do estoque
         with transaction.atomic():
             emprestimo = Emprestimo.objects.create(
                 equipamento=equipamento,
                 colaborador=colaborador,
                 data_emprestimo=data_emprestimo,
                 data_devolucao_prevista=data_devolucao,
-                responsavel=request.user,  # Usuário logado como responsável
+                responsavel=request.user,
                 observacoes=data.get('observacoes', ''),
                 status='Ativo'
             )
-            
+            equipamento.quantidade -= 1
+            equipamento.save()
+
         return JsonResponse({
             'success': True,
             'message': 'Empréstimo registrado com sucesso!',
@@ -426,19 +432,17 @@ def cadastrar_emprestimo(request):
                 'id': emprestimo.id,
                 'equipamento': emprestimo.equipamento.nome,
                 'colaborador': emprestimo.colaborador.nome,
-                'data_emprestimo': data['data_emprestimo'],
-                'data_devolucao_prevista': data['data_devolucao_prevista']
+                'data_emprestimo': str(data_emprestimo),
+                'data_devolucao_prevista': str(data_devolucao)
             }
         })
-        
+
     except Exception as e:
         logger.error(f"Erro ao cadastrar empréstimo: {str(e)}", exc_info=True)
         return JsonResponse({
             'success': False, 
             'message': 'Erro interno no servidor'
-        }, status=500)  #  <<< CORREÇÃO AQUI (status=500)
-        
-from django.http import JsonResponse
+        }, status=500)
 
 def listar_emprestimos(request):
     emprestimos = Emprestimo.objects.select_related('equipamento', 'colaborador').all()
@@ -462,7 +466,7 @@ def listar_emprestimos(request):
     return JsonResponse({"emprestimos": data})
 
 @csrf_exempt
-@require_http_methods(["PUT"])
+@require_http_methods(["POST"])
 @login_required
 @user_passes_test(is_admin)
 def editar_emprestimo(request):
@@ -563,75 +567,39 @@ def excluir_emprestimo(request, id):
     except Exception as e:
         logger.error(f"Erro ao excluir empréstimo {id}: {str(e)}")
         return JsonResponse({'success': False, 'message': 'Erro ao excluir empréstimo'}, status=500)
-        
-@csrf_exempt
-@require_http_methods(['GET'])
-def obter_emprestimo(request, id):
+        from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from .models import Emprestimo
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from .models import Emprestimo
+
+@require_GET
+def obter_emprestimo(request, emprestimo_id):  # Note o nome do parâmetro
     try:
-        emprestimo = Emprestimo.objects.select_related('equipamento', 'colaborador').get(id=id)
+        emprestimo = Emprestimo.objects.select_related('equipamento', 'colaborador').get(id=emprestimo_id)
         
-        return JsonResponse({
+        response_data = {
             'success': True,
-            'data': {
+            'emprestimo': {
                 'id': emprestimo.id,
                 'equipamento': {
                     'id': emprestimo.equipamento.id,
                     'nome': emprestimo.equipamento.nome,
                     'tipo': emprestimo.equipamento.tipo,
-                    'disponivel': emprestimo.equipamento.disponivel
                 },
                 'colaborador': {
                     'id': emprestimo.colaborador.id,
                     'nome': emprestimo.colaborador.nome,
                     'matricula': emprestimo.colaborador.matricula,
-                    'setor': emprestimo.colaborador.setor
                 },
-                'data_emprestimo': emprestimo.data_emprestimo.strftime('%Y-%m-%d'),
-                'data_devolucao_prevista': emprestimo.data_devolucao_prevista.strftime('%Y-%m-%d'),
-                'data_devolucao_real': emprestimo.data_devolucao_real.strftime('%Y-%m-%d') if emprestimo.data_devolucao_real else None,
+                'data_emprestimo': emprestimo.data_emprestimo.isoformat(),
+                'data_devolucao_prevista': emprestimo.data_devolucao_prevista.isoformat(),
+                'observacoes': emprestimo.observacoes or '',
                 'status': emprestimo.status,
-                'observacoes': emprestimo.observacoes,
-                'dias_restantes': (emprestimo.data_devolucao_prevista - date.today()).days if emprestimo.status == 'Ativo' else None,
-                'dias_atraso': (date.today() - emprestimo.data_devolucao_prevista).days if emprestimo.status == 'Atrasado' else 0
             }
-        })
-    
-    except Emprestimo.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Empréstimo não encontrado'}, status=404)
-    except Exception as e:
-        logger.error(f"Erro ao obter empréstimo {id}: {str(e)}")
-        return JsonResponse({'success': False, 'message': 'Erro ao carregar dados do empréstimo'}, status=500)
-        
-import json
-
-        
-@csrf_exempt
-@require_POST
-@login_required
-def registrar_devolucao(request):
-    try:
-        emprestimo_id = request.POST.get('emprestimo_id')
-        danificado = request.POST.get('danificado') == 'true'
-        motivo_dano = request.POST.get('motivo_dano', '')
-        
-        emprestimo = Emprestimo.objects.get(id=emprestimo_id)
-        
-        # Atualiza o status
-        emprestimo.status = 'Devolvido'
-        emprestimo.data_devolucao_real = timezone.now()
-        emprestimo.danificado = danificado
-        emprestimo.motivo_dano = motivo_dano if danificado else ''
-        emprestimo.save()
-        
-        # Atualiza status do equipamento
-        equipamento = emprestimo.equipamento
-        equipamento.status = 'Manutenção' if danificado else 'Disponível'
-        equipamento.save()
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Devolução registrada com sucesso!'
-        })
+        }
+        return JsonResponse(response_data)
         
     except Emprestimo.DoesNotExist:
         return JsonResponse({
@@ -644,6 +612,47 @@ def registrar_devolucao(request):
             'success': False,
             'message': str(e)
         }, status=500)
+@csrf_exempt
+@require_POST
+@login_required
+def registrar_devolucao(request):
+    try:
+        emprestimo_id = request.POST.get('emprestimo_id')
+        danificado = request.POST.get('danificado') == 'true'
+        motivo_dano = request.POST.get('motivo_dano', '')
+        observacoes = request.POST.get('observacoes', '')
+
+        if not emprestimo_id:
+            return JsonResponse({'success': False, 'message': 'ID do empréstimo não informado'}, status=400)
+
+        with transaction.atomic():
+            emprestimo = Emprestimo.objects.select_related('equipamento').get(id=emprestimo_id)
+
+            if emprestimo.status != 'Ativo':
+                return JsonResponse({'success': False, 'message': 'Empréstimo já devolvido'}, status=400)
+
+            # Atualiza empréstimo
+            emprestimo.status = 'Devolvido com Danos' if danificado else 'Devolvido'
+            emprestimo.data_devolucao_real = timezone.now()
+            emprestimo.danificado = danificado
+            emprestimo.motivo_dano = motivo_dano if danificado else ''
+            if observacoes:
+                emprestimo.observacoes += f'\n[Devolução] {observacoes}'
+            emprestimo.save()
+
+            # Atualiza equipamento
+            equipamento = emprestimo.equipamento
+            equipamento.status = 'Manutenção' if danificado else 'Disponível'
+            equipamento.quantidade += 1  # Se tiver controle de quantidade
+            equipamento.save()
+
+        return JsonResponse({'success': True, 'message': 'Devolução registrada com sucesso!'})
+
+    except Emprestimo.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Empréstimo não encontrado'}, status=404)
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
     
 @csrf_exempt
@@ -666,14 +675,18 @@ def buscar_equipamentos(request):
 
     # Filtra por disponibilidade (se necessário)
     if filtrar_disponiveis:
-        ids_indisponiveis = Emprestimo.objects.filter(
-            status='Ativo'
-        ).values_list('equipamento_id', flat=True)
-        equipamentos = equipamentos.exclude(id__in=ids_indisponiveis)
-
+        lista_nova = list(filter(lambda row: row.quantidade > 0, equipamentos))
+    
+    lista_nova = [
+        {
+            "id": row.id, 
+            "nome": row.nome, 
+            "numero_serie": row.numero_serie, 
+            "status": row.status, 
+            "quantidade": row.quantidade
+        } for row in lista_nova]
     # Retorna os dados
-    dados = list(equipamentos.values('id', 'nome', 'numero_serie', 'status'))
-    return JsonResponse(dados, safe=False)
+    return JsonResponse(lista_nova, safe=False)
 
 @csrf_exempt
 @require_POST
@@ -730,28 +743,44 @@ def registrar_emprestimo(request):
         emprestimo = Emprestimo.objects.create(
             equipamento=equipamento,
             colaborador=colaborador,
-            data_emprestimo=data['data_emprestimo'],
-            data_devolucao_prevista=data['data_devolucao_prevista'],
+            data_emprestimo=data_emprestimo,  # Usando o objeto date já convertido
+            data_devolucao_prevista=data_devolucao,
             observacoes=data.get('observacoes', ''),
             status='Ativo'
         )
 
-        return JsonResponse({
-    'success': True,
-    'message': 'Empréstimo registrado com sucesso!',
-    'id': emprestimo.id,
-    'colaborador': colaborador.nome,
-    'equipamento': equipamento.nome,
-    'data_emprestimo': emprestimo.data_emprestimo.strftime('%d/%m/%Y'),
-    'status': emprestimo.status
-})
+        # Prepara a resposta com todos os campos necessários
+        response_data = {
+            'success': True,
+            'message': 'Empréstimo registrado com sucesso!',
+            'emprestimo': {
+                'id': emprestimo.id,
+                'equipamento': {
+                    'id': equipamento.id,
+                    'nome': equipamento.nome,
+                    'tipo': equipamento.tipo,
+                    'quantidade': equipamento.quantidade
+                },
+                'colaborador': {
+                    'id': colaborador.id,
+                    'nome': colaborador.nome,
+                    'matricula': colaborador.matricula,
+                    'setor': colaborador.setor.nome if colaborador.setor else 'Sem setor'
+                },
+                'data_emprestimo': emprestimo.data_emprestimo.strftime('%d/%m/%Y'),
+                'data_devolucao_prevista': emprestimo.data_devolucao_prevista.strftime('%d/%m/%Y'),
+                'status': emprestimo.get_status_display(),
+                'observacoes': emprestimo.observacoes
+            }
+        }
+
+        return JsonResponse(response_data)
 
     except Exception as e:
         import logging
         logger = logging.getLogger(__name__)
-        logger.error(f"Erro ao registrar empréstimo: {str(e)}")
+        logger.error(f"Erro ao registrar empréstimo: {str(e)}", exc_info=True)
         return JsonResponse({
             'success': False,
-            'message': 'Ocorreu um erro interno no servidor'
+            'message': f'Ocorreu um erro interno no servidor: {str(e)}'
         }, status=500)
-        

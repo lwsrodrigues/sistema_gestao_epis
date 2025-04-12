@@ -191,60 +191,61 @@
                             </div>
                         </div>
                     </div>
-                   <!-- Tabela de Equipamentos -->
-            <div class="card shadow-sm">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Equipamento</th>
-                                    <th>Tipo</th>
-                                    <th>Status</th>
-                                    <th>Última Atualização</th>
-                                    <th class="text-end">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabelaEquipamentos">
-                                {% for equipamento in equipamentos %}
-                                <tr data-id="{{ equipamento.id }}">
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="equipamento-icon">
-                                                <i class="fas fa-hard-hat"></i>
-                                            </div>
-                                            <div>
-                                                <strong>{{ equipamento.nome }}</strong>
-                                                <div class="text-muted small">#{{ equipamento.id }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>{{ equipamento.tipo }}</td>
-                                    <td>
-                                        <span class="status-badge status-{{ equipamento.status|lower }}">
-                                            {{ equipamento.status }}
-                                        </span>
-                                    </td>
-                                    <td>{{ equipamento.ultima_atualizacao|date:"d/m/Y H:i" }}</td>
-                                    <td class="text-end">
-                                        <div class="btn-group" role="group">
-                                            <button class="btn btn-sm btn-outline-primary btn-editar" data-id="{{ equipamento.id }}">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-danger btn-excluir" data-id="{{ equipamento.id }}">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+<!-- Tabela de Equipamentos -->
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Equipamento</th>
+                        <th>Tipo</th>
+                        <th>Status</th>
+                        <th>Última Atualização</th>
+                        <th>Quantidade</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaEquipamentos">
+                    {% for equipamento in equipamentos %}
+                    <tr data-id="{{ equipamento.id }}">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="equipamento-icon">
+                                    <i class="fas fa-hard-hat"></i>
+                                </div>
+                                <div>
+                                    <strong>{{ equipamento.nome }}</strong>
+                                    <div class="text-muted small">#{{ equipamento.id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ equipamento.tipo }}</td>
+                        <td>
+                            <span class="status-badge status-{{ equipamento.status|lower }}">
+                                {{ equipamento.status }}
+                            </span>
+                        </td>
+                        <td>{{ equipamento.ultima_atualizacao|date:"d/m/Y H:i" }}</td>
+                        <td><strong>{{ equipamento.quantidade }}</strong></td>
+                        <td class="text-end">
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-outline-primary btn-editar" data-id="{{ equipamento.id }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-excluir" data-id="{{ equipamento.id }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
+
 
     <!-- Modal Novo Equipamento -->
     <div class="modal fade" id="novoEquipamentoModal" tabindex="-1" aria-labelledby="novoEquipamentoModalLabel" aria-hidden="true">
@@ -356,35 +357,36 @@
                                     new Date(equip.ultima_atualizacao).toLocaleString('pt-BR') : 
                                     'Não informado';
                                     
-                                const newRow = `
-                                <tr data-id="${equip.id}">
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-hard-hat me-2 text-primary"></i>
-                                            <div>
-                                                <strong>${equip.nome}</strong>
-                                                <div class="text-muted small">#${equip.id}</div>
+                                    const newRow = `
+                                    <tr data-id="${equip.id}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-hard-hat me-2 text-primary"></i>
+                                                <div>
+                                                    <strong>${equip.nome}</strong>
+                                                    <div class="text-muted small">#${equip.id}</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>${equip.tipo}</td>
-                                    <td>
-                                        <span class="status-badge status-${equip.status.toLowerCase()}">
-                                            ${equip.status}
-                                        </span>
-                                    </td>
-                                    <td>${dataFormatada}</td>
-                                    <td class="text-end">
-                                        <div class="btn-group" role="group">
-                                            <button class="btn btn-sm btn-outline-primary btn-editar" data-id="${equip.id}">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-danger btn-excluir" data-id="${equip.id}">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>`;
+                                        </td>
+                                        <td>${equip.tipo}</td>
+                                        <td>
+                                            <span class="status-badge status-${equip.status.toLowerCase()}">
+                                                ${equip.status}
+                                            </span>
+                                        </td>
+                                        <td>${dataFormatada}</td>
+                                        <td><strong>${equip.quantidade}</strong></td> <!-- ✅ Adicionado aqui -->
+                                        <td class="text-end">
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-outline-primary btn-editar" data-id="${equip.id}">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger btn-excluir" data-id="${equip.id}">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>`;
                                 tbody.append(newRow);
                             });
                         }

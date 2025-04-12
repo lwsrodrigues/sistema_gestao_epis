@@ -367,85 +367,91 @@ $(document).ready(function() {
     carregarColaboradores();
 });
     
-        // Submit do formulário (criação e edição)
-        colaboradorForm.submit(function(e) {
-            e.preventDefault();
-            
-            const isEditMode = $(this).attr('data-mode') === 'edit';
-            const url = isEditMode ? "{% url 'editar_colaborador' %}" : "{% url 'cadastrar_colaborador' %}";
-            const method = isEditMode ? 'PUT' : 'POST';
+       // Submit do formulário (criação e edição) - VERSÃO CORRIGIDA
+       $('#formColaborador').on('submit', function(e) {
+        e.preventDefault();
+        const isEditMode = $(this).attr('data-mode') === 'edit';
+        const url = isEditMode ? "{% url 'editar_colaborador' %}" : "{% url 'cadastrar_colaborador' %}";
     
-            $.ajax({
-                url: url,
-                method: method,
-                data: $(this).serialize(),
-                headers: {'X-CSRFToken': '{{ csrf_token }}'},
-                success: function(response) {
-                    if (!response.success) {
-                        Swal.fire('Erro', response.message || 'Operação falhou', 'error');
-                        return;
-                    }
+        // Sempre usar POST
+        const method = 'POST';
     
-                    colaboradorModal.modal('hide');
-                    
-                    if (isEditMode) {
-                        // Atualiza a linha existente
-                        const row = $(`tr[data-id="${response.id}"]`);
-                        row.find('strong').text(response.nome);
-                        row.find('td:eq(1)').text(response.matricula);
-                        row.find('td:eq(2)').text(response.email || '-');
-                        row.find('.small').text(response.setor || '-');
-                        row.find('.status-badge')
-                            .removeClass('status-ativo status-inativo')
-                            .addClass(`status-${response.status.toLowerCase()}`)
-                            .text(response.status);
-                    } else {
-                        // Adiciona novo colaborador na tabela
-                        const newRow = `
-                        <tr data-id="${response.id}">
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-user-circle me-2 text-muted"></i>
-                                    <div>
-                                        <strong>${response.nome}</strong>
-                                        <div class="text-muted small">${response.setor || '-'}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>${response.matricula}</td>
-                            <td>${response.email || '-'}</td>
-                            <td>
-                                <span class="status-badge status-${response.status.toLowerCase()}">
-                                    ${response.status}
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary me-1 btn-editar">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger btn-excluir">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </td>
-                        </tr>`;
-                        $('tbody').prepend(newRow);
-                    }
-                    
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Sucesso!',
-                        text: isEditMode ? 'Atualizado com sucesso!' : 'Cadastrado com sucesso!',
-                    });
-                },
-                error: function(xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro',
-                        text: xhr.responseJSON?.message || 'Erro no servidor'
-                    });
+        // Serializa como array para adicionar campo extra
+        let formData = $(this).serializeArray();
+    
+        if (isEditMode) {
+            formData.push({ name: '_method', value: 'PUT' }); // Simula PUT
+        }
+    
+        $.ajax({
+            url: url,
+            method: method,
+            data: $.param(formData),
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            success: function(response) {
+                if (!response.success) {
+                    Swal.fire('Erro', response.message || 'Operação falhou', 'error');
+                    return;
                 }
-            });
+    
+                colaboradorModal.modal('hide');
+    
+                if (isEditMode) {
+                    const row = $(`tr[data-id="${response.id}"]`);
+                    row.find('strong').text(response.nome);
+                    row.find('td:eq(1)').text(response.matricula);
+                    row.find('td:eq(2)').text(response.email || '-');
+                    row.find('.small').text(response.setor || '-');
+                    row.find('.status-badge')
+                        .removeClass('status-ativo status-inativo')
+                        .addClass(`status-${response.status.toLowerCase()}`)
+                        .text(response.status);
+                } else {
+                    const newRow = `
+                    <tr data-id="${response.id}">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-circle me-2 text-muted"></i>
+                                <div>
+                                    <strong>${response.nome}</strong>
+                                    <div class="text-muted small">${response.setor || '-'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${response.matricula}</td>
+                        <td>${response.email || '-'}</td>
+                        <td>
+                            <span class="status-badge status-${response.status.toLowerCase()}">
+                                ${response.status}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-primary me-1 btn-editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger btn-excluir">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                    $('tbody').prepend(newRow);
+                }
+    
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso!',
+                    text: isEditMode ? 'Atualizado com sucesso!' : 'Cadastrado com sucesso!',
+                });
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: xhr.responseJSON?.message || 'Erro no servidor'
+                });
+            }
         });
+    });
     
         // Excluir colaborador
         $(document).on('click', '.btn-excluir', function() {

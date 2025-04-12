@@ -37,7 +37,7 @@ urlpatterns = [
     path('emprestimos/editar/', views.editar_emprestimo, name='editar_emprestimo'),
     path('emprestimos/devolver/', views.registrar_devolucao, name='registrar_devolucao'),
     path('emprestimos/excluir/<int:id>/', views.excluir_emprestimo, name='excluir_emprestimo'),
-    path('emprestimos/obter/<int:id>/', views.obter_emprestimo, name='obter_emprestimo'),
+    path('emprestimos/obter/<int:emprestimo_id>/', views.obter_emprestimo, name='obter_emprestimo'),
     path('emprestimos/registrar/', views.registrar_emprestimo, name='registrar_emprestimo'),
     path('emprestimos/devolver/<int:emprestimo_id>/', views.registrar_devolucao, name='registrar_devolucao'),
        

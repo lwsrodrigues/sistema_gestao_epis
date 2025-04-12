@@ -64,6 +64,7 @@ class Emprestimo(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Ativo')
     danificado = models.BooleanField(default=False)
     observacoes = models.TextField(blank=True)
+    motivo_dano = models.TextField(blank=True)
     responsavel = models.ForeignKey(
     settings.AUTH_USER_MODEL,
     on_delete=models.PROTECT,
