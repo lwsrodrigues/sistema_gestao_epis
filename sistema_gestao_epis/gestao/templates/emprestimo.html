@@ -240,7 +240,8 @@
 </div>
 
             <!-- Tabela de Empréstimos -->
-            <div class="card shadow-sm w-100">
+    <!-- Tabela de Empréstimos -->
+<div class="card shadow-sm w-100">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover mb-0">
@@ -254,15 +255,15 @@
                         <th class="text-end">Ações</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% for emprestimo in emprestimos %}
+                <tbody id="emprestimos-body">
+                    {% comment %} {% for emprestimo in emprestimos %}
                     <tr data-id="{{ emprestimo.id }}">
                         <td>
                             <div class="d-flex align-items-center">
                                 <i class="fas fa-hard-hat me-2 text-muted"></i>
                                 <div>
                                     <strong>{{ emprestimo.equipamento.nome }}</strong>
-                                    <div class="text-muted small">{{ emprestimo.equipamento.tipo }}</div>
+                                    <div class="text-muted small">{{ emprestimo.equipamento.tipo|default:"-" }}</div>
                                 </div>
                             </div>
                         </td>
@@ -271,7 +272,7 @@
                                 <i class="fas fa-user me-2 text-muted"></i>
                                 <div>
                                     <strong>{{ emprestimo.colaborador.nome }}</strong>
-                                    <div class="text-muted small">{{ emprestimo.colaborador.matricula }}</div>
+                                    <div class="text-muted small">{{ emprestimo.colaborador.matricula|default:"-" }}</div>
                                 </div>
                             </div>
                         </td>
@@ -291,8 +292,8 @@
                             </span>
                         </td>
                         <td class="text-end">
-                            <button class="btn btn-sm btn-outline-primary me-1 btn-editar" 
-                                    data-bs-toggle="modal" 
+                            <button class="btn btn-sm btn-outline-primary me-1 btn-editar"
+                                    data-bs-toggle="modal"
                                     data-bs-target="#editarEmprestimoModal"
                                     data-id="{{ emprestimo.id }}">
                                 <i class="fas fa-edit"></i>
@@ -310,12 +311,13 @@
                             </button>
                         </td>
                     </tr>
-                    {% endfor %}
+                    {% endfor %} {% endcomment %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
 
     
 <!-- Modal Novo Empréstimo -->
@@ -393,16 +395,18 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
+        carregarEmprestimos();
         // Configuração para evitar conflitos entre Select2 e Bootstrap Modais
         $.fn.modal.Constructor.prototype._enforceFocus = function() {};
         
         // Carrega os empréstimos assim que a página é aberta
-        carregarEmprestimos();
+        });
     
         /**
          * Função principal para carregar a lista de empréstimos via AJAX
          */
         function carregarEmprestimos() {
+            console.log('ola');
             $.ajax({
                 url: "{% url 'listar_emprestimos' %}",  // URL da view Django
                 method: "GET",
@@ -428,74 +432,75 @@
                             
                             // Adiciona ícone de alerta se o empréstimo estiver atrasado
                             const atrasadoIcon = emp.status === 'Atrasado' ? 
-                                '<i class="fas fa-exclamation-triangle text-danger ms-1"></i>' : '';
+                            '<i class="fas fa-exclamation-triangle text-danger ms-1"></i>' : '';
                             
                             // Adiciona ícone de alerta se o equipamento estiver danificado
                             const danificadoIcon = emp.danificado ?
                                 '<i class="fas fa-exclamation-circle ms-1 text-danger"></i>' : '';
-                            
-                            // Template da linha da tabela
-                            const row = `
-                            <tr data-id="${emp.id}">
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-hard-hat me-2 text-muted"></i>
-                                        <div>
-                                            <strong>${emp.equipamento.nome}</strong>
-                                            <div class="text-muted small">${emp.equipamento.tipo}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-user me-2 text-muted"></i>
-                                        <div>
-                                            <strong>${emp.colaborador.nome}</strong>
-                                            <div class="text-muted small">${emp.colaborador.matricula}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>${new Date(emp.data_emprestimo).toLocaleDateString('pt-BR')}</td>
-                                <td>
-                                    ${new Date(emp.data_devolucao_prevista).toLocaleDateString('pt-BR')}
-                                    ${atrasadoIcon}
-                                </td>
-                                <td>
-                                    <span class="badge ${statusClass}">${emp.status}</span>
-                                    ${danificadoIcon}
-                                </td>
-                                <td class="text-end">
-                                    <button class="btn btn-sm btn-outline-primary me-1 btn-editar" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#editarEmprestimoModal"
-                                            data-id="${emp.id}">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    ${emp.status === 'Ativo' ? `
-                                    <button class="btn btn-sm btn-outline-success me-1 btn-devolver"
-                                            data-id="${emp.id}"
-                                            title="Registrar Devolução">
-                                        <i class="fas fa-undo"></i>
-                                    </button>` : ''}
-                                    <button class="btn btn-sm btn-outline-danger btn-excluir"
+                                
+                                // Template da linha da tabela
+                                const row = `
+                                <tr data-id="${emp.id}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-hard-hat me-2 text-muted"></i>
+                                            <div>
+                                                <strong>${emp.equipamento.nome}</strong>
+                                                <div class="text-muted small">${emp.equipamento.tipo}</div>
+                                                </div>
+                                                </div>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-user me-2 text-muted"></i>
+                                                        <div>
+                                                            <strong>${emp.colaborador.nome}</strong>
+                                                            <div class="text-muted small">${emp.colaborador.matricula}</div>
+                                                            </div>
+                                                            </div>
+                                                            </td>
+                                                            <td>${new Date(emp.data_emprestimo).toLocaleDateString('pt-BR')}</td>
+                                                            <td>
+                                                                ${new Date(emp.data_devolucao_prevista).toLocaleDateString('pt-BR')}
+                                                                ${atrasadoIcon}
+                                                                </td>
+                                                                <td>
+                                                                    <span class="badge ${statusClass}">${emp.status}</span>
+                                                                    ${danificadoIcon}
+                                                                    </td>
+                                                                    <td class="text-end">
+                                                                        <button class="btn btn-sm btn-outline-primary me-1 btn-editar" 
+                                                                        data-bs-toggle="modal" 
+                                                                        data-bs-target="#editarEmprestimoModal"
+                                                                        data-id="${emp.id}">
+                                                                        <i class="fas fa-edit"></i>
+                                                                        </button>
+                                                                        ${emp.status === 'Ativo' ? `
+                                                                        <button class="btn btn-sm btn-outline-success me-1 btn-devolver"
+                                                                        data-id="${emp.id}"
+                                                                        title="Registrar Devolução">
+                                                                        <i class="fas fa-undo"></i>
+                                                                        </button>` : ''}
+                                                                        <button class="btn btn-sm btn-outline-danger btn-excluir"
                                             data-bs-toggle="modal"
                                             data-bs-target="#confirmarExclusaoModal"
                                             data-id="${emp.id}">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </td>
-                            </tr>`;
-                            tbody.append(row);
-                        });
-                    } else {
-                        // Mensagem quando não há empréstimos
-                        tbody.html('<tr><td colspan="6" class="text-center text-muted py-4">Nenhum empréstimo encontrado</td></tr>');
-                    }
-                },
-                // Tratamento de erros na requisição
-                error: () => {
-                    $('#emprestimos-body').html('<tr><td colspan="6" class="text-center text-danger py-4">Erro ao carregar empréstimos</td></tr>');
-                }
+                                            <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            </td>
+                                            </tr>`;
+                                            tbody.append(row);
+                                            console.log(row);
+                                        });
+                                    } else {
+                                        // Mensagem quando não há empréstimos
+                                        tbody.html('<tr><td colspan="6" class="text-center text-muted py-4">Nenhum empréstimo encontrado</td></tr>');
+                                    }
+                                },
+                                // Tratamento de erros na requisição
+                                error: () => {
+                                    $('#emprestimos-body').html('<tr><td colspan="6" class="text-center text-danger py-4">Erro ao carregar empréstimos</td></tr>');
+                                }
             });
         }
     
@@ -571,7 +576,6 @@
         });
     
         /**
-         * Configuração do modal de novo empréstimo
          * - Limpa os campos quando o modal é aberto
          */
         $('#novoEmprestimoModal').on('show.bs.modal', () => {
@@ -607,17 +611,17 @@ $('#modalEmprestimoForm').submit(function(e) {
 
             if (isEditMode) {
                 const row = $(`tr[data-id="${response.id}"]`);
-                row.find('td:eq(0)').text(response.colaborador);
-                row.find('td:eq(1)').text(response.equipamento);
-                row.find('td:eq(2)').text(response.data_emprestimo);
-                row.find('td:eq(3)').text(response.status);
+                row.find('td:eq(0)').text(response['colaborador']);
+                row.find('td:eq(1)').text(response['equipamento']);
+                row.find('td:eq(2)').text(response['data_emprestimo']);
+                row.find('td:eq(3)').text(response['status']);
             } else {
                 const newRow = `
                 <tr data-id="${response.id}">
-                    <td>${response.colaborador}</td>
-                    <td>${response.equipamento}</td>
-                    <td>${response.data_emprestimo}</td>
-                    <td>${response.status}</td>
+                    <td>${response['colaborador']}</td>
+                    <td>${response['equipamento']}</td>
+                    <td>${response['data_emprestimo']}</td>
+                    <td>${response['status']}</td>
                     <td class="text-end">
                         <button class="btn btn-sm btn-outline-primary me-1 btn-editar-emprestimo">
                             <i class="fas fa-edit"></i>
@@ -683,7 +687,10 @@ $('#modalEmprestimoForm').submit(function(e) {
          */
         $(document).on('click', '.btn-devolver', function() {
             const emprestimoId = $(this).data('id');
+            
             // Modal de confirmação com campos adicionais
+
+
             Swal.fire({
                 title: 'Registrar Devolução',
                 html: `
@@ -706,6 +713,8 @@ $('#modalEmprestimoForm').submit(function(e) {
                 })
             }).then((result) => {
                 if (result.isConfirmed) {
+
+
                     // Envia os dados da devolução
                     $.ajax({
                         url: "{% url 'registrar_devolucao' %}",
@@ -736,7 +745,7 @@ $('#modalEmprestimoForm').submit(function(e) {
         /**
          * Evento para excluir empréstimo
          */
-        $(document).on('click', '.btn-excluir', function() {
+        {% comment %} $(document).on('click', '.btn-excluir', function() {
             const emprestimoId = $(this).data('id');
             // Confirmação antes de excluir
             Swal.fire({
@@ -748,28 +757,8 @@ $('#modalEmprestimoForm').submit(function(e) {
                 cancelButtonColor: '#3085d6',
                 confirmButtonText: 'Sim, excluir!'
             }).then((result) => {
-                if (result.isConfirmed) {
-                    // Requisição DELETE para excluir
-                    $.ajax({
-                        url: `/emprestimos/excluir/${emprestimoId}/`,
-                        method: 'DELETE',
-                        headers: {'X-CSRFToken': '{{ csrf_token }}'},
-                        success: function(response) {
-                            if (response.success) {
-                                Swal.fire('Excluído!', 'Empréstimo removido com sucesso', 'success');
-                                // Atualiza a lista
-                                carregarEmprestimos();
-                            } else {
-                                Swal.fire('Erro!', response.message || 'Erro ao excluir', 'error');
-                            }
-                        },
-                        error: function() {
-                            Swal.fire('Erro!', 'Falha na comunicação com o servidor', 'error');
-                        }
-                    });
-                }
-            });
-        });
+                if (result.isConfirmed) { {% endcomment %}
+
     
         /**
          * Filtro de pesquisa em tempo real
@@ -805,7 +794,6 @@ $('#modalEmprestimoForm').submit(function(e) {
     
         // Carrega os empréstimos ao iniciar
         carregarEmprestimos();
-    });
     </script>
     
 </body>

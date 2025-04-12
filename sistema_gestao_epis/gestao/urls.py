@@ -32,7 +32,7 @@ urlpatterns = [
     path('equipamentos/excluir/<int:id>/', views.excluir_equipamento, name='excluir_equipamento'),
     path('equipamentos/obter/<int:id>/', views.obter_equipamento, name='obter_equipamento'),
     
-    path('emprestimos/', views.listar_emprestimos, name='listar_emprestimos'),
+    path('emprestimos/listar/', views.listar_emprestimos, name='listar_emprestimos'),
     path('emprestimos/registrar/', views.cadastrar_emprestimo, name='cadastrar_emprestimo'),
     path('emprestimos/editar/', views.editar_emprestimo, name='editar_emprestimo'),
     path('emprestimos/devolver/', views.registrar_devolucao, name='registrar_devolucao'),
