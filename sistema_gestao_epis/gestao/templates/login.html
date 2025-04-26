@@ -133,9 +133,22 @@
     <div class="login-card shadow-lg">
         <div class="login-header">
             <!-- Substitua pelo seu logo -->
-            <img src="{% static 'gestao/img/logo-white.png' %}" alt="Logo" class="logo">
+            <img src="{% static 'img/logo.png' %}" alt="Logo" class="logo">
             <h4 class="mb-0">Bem-vindo!</h4>
         </div>
+
+        <style>
+        .logo {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%; /* deixa a imagem redonda */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* sombra suave */
+            background-color: #f5f5f5; /* substitua pela cor de fundo da tela, se necessário */
+            padding: 8px;
+        }
+        </style>
+        
         
         <div class="login-body">
             {% if messages %}

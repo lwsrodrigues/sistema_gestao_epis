@@ -440,19 +440,19 @@
                 });
             }
         });
-    });
-
-        // Editar equipamento
-        $(document).on('click', '.btn-editar', function() {
-            const equipamentoId = $(this).data('id');
-            
-            $.ajax({
-                url: `/equipamentos/editar/${equipamentoId}/`,
-                method: 'GET',
-                success: function(response) {
-                    if (response.success) {
-                        // Cria o modal de edição dinamicamente
-                        const modalHtml = `
+    });$(document).on('click', '.btn-editar', function() {
+        const equipamentoId = $(this).data('id');
+        console.log("Equipamento ID: ", equipamentoId); // Verificando se o ID do equipamento é capturado corretamente
+        
+        $.ajax({
+            url: `/equipamentos/editar/${equipamentoId}/`,
+            method: 'GET',  // Usando GET para buscar as informações do equipamento
+            success: function(response) {
+                console.log("Resposta recebida: ", response); // Verificando a resposta do servidor
+    
+                if (response.success) {
+                    // Cria o modal de edição dinamicamente
+                    const modalHtml = `
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
                                 <div class="modal-header bg-primary text-white">
@@ -486,6 +486,10 @@
                                                     <option value="Manutenção" ${response.equipamento.status === 'Manutenção' ? 'selected' : ''}>Manutenção</option>
                                                 </select>
                                             </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Quantidade *</label>
+                                                <input type="number" class="form-control" name="quantidade" value="${response.equipamento.quantidade}" min="1" required>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
@@ -495,38 +499,68 @@
                                 </form>
                             </div>
                         </div>`;
-                        
-                        $('#editarEquipamentoModal').html(modalHtml);
-                        $('#editarEquipamentoModal').modal('show');
-                        
-                        // Submit do formulário de edição
-                        $('#formEditarEquipamento').on('submit', function(e) {
-                            e.preventDefault();
-                            
-                            $.ajax({
-                                url: $(this).attr('action'),
-                                method: 'POST',
-                                data: $(this).serialize(),
-                                headers: {'X-CSRFToken': '{{ csrf_token }}'},
-                                success: function(response) {
-                                    if (response.success) {
-                                        $('#editarEquipamentoModal').modal('hide');
-                                        Swal.fire({
-                                            icon: 'success',
-                                            title: 'Sucesso!',
-                                            text: response.message,
-                                            timer: 2000
-                                        });
-                                        carregarEquipamentos();
-                                    }
+    
+                    // Atualiza o conteúdo do modal com o HTML gerado dinamicamente
+                    $('#editarEquipamentoModal').html(modalHtml);
+    
+                    // Exibe o modal
+                    $('#editarEquipamentoModal').modal('show');
+                    
+                    // Submit do formulário de edição
+                    $('#formEditarEquipamento').on('submit', function(e) {
+                        e.preventDefault();
+            
+                        $.ajax({
+                            url: `/equipamentos/editar/${equipamentoId}/`,
+                            method: 'POST',
+                            data: $(this).serialize(),
+                            headers: {'X-CSRFToken': '{{ csrf_token }}'},  // CSRF Token para a requisição POST
+                            success: function(response) {
+                                if (response.success) {
+                                    $('#editarEquipamentoModal').modal('hide');
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Sucesso!',
+                                        text: response.message,
+                                        timer: 2000
+                                    });
+                                    carregarEquipamentos();  // Função para recarregar a lista de equipamentos
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Erro!',
+                                        text: response.message || 'Falha ao editar.',
+                                    });
                                 }
-                            });
+                            },
+                            error: function(xhr, status, error) {
+                                console.error("Erro na requisição:", status, error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Erro',
+                                    text: 'Erro ao editar o equipamento.',
+                                });
+                            }
                         });
-                    }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: response.message || 'Equipamento não encontrado.',
+                    });
                 }
-            });
+            },
+            error: function(xhr, status, error) {
+                console.error("Erro ao buscar o equipamento:", status, error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Erro ao buscar informações do equipamento.',
+                });
+            }
         });
-
+    });
         // Excluir equipamento
         $(document).on('click', '.btn-excluir', function() {
             const equipamentoId = $(this).data('id');

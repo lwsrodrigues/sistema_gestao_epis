@@ -41,11 +41,16 @@ urlpatterns = [
     path('emprestimos/registrar/', views.registrar_emprestimo, name='registrar_emprestimo'),
     path('emprestimos/devolver/<int:emprestimo_id>/', views.registrar_devolucao, name='registrar_devolucao'),
        
- path('equipamentos/obter/<int:id>/', views.obter_equipamento, name='obter_equipamento'),
- path('editar_equipamento/<int:id>/', views.editar_equipamento, name='editar_equipamento'),
+ # URL para obter os dados do equipamento (usado para preencher o formulário de edição)
+    path('equipamentos/obter/<int:id>/', views.obter_equipamento, name='obter_equipamento'),
+
+    # URL para atualizar o equipamento (usado para a requisição POST)
+ path('equipamentos/editar/<int:id>/', views.obter_equipamento, name='obter_equipamento'),
+
  path('equipamentos/excluir/<int:id>/', views.excluir_equipamento, name='excluir_equipamento'),
     path('buscar-equipamentos/', views.buscar_equipamentos, name='buscar_equipamentos'),
       path('criar_emprestimo/', views.cadastrar_emprestimo, name='criar_emprestimo'),
+      path('emprestimos/atualizar/<int:id>/', views.atualizar_emprestimo, name='atualizar_emprestimo'),
 
     # Usuário comum
     path('user-dashboard/', views.user_dashboard, name='user_dashboard'),

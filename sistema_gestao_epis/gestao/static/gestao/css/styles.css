@@ -503,6 +503,15 @@ canvas {
 
 
 
+.logo {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%; /* deixa a imagem redonda */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* sombra suave */
+    background-color: #f5f5f5; /* substitua pela cor de fundo da tela, se necessário */
+    padding: 8px;
+}
 
 
 

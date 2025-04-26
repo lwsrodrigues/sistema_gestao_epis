@@ -784,3 +784,102 @@ def registrar_emprestimo(request):
             'success': False,
             'message': f'Ocorreu um erro interno no servidor: {str(e)}'
         }, status=500)
+        
+        
+@csrf_exempt
+def atualizar_emprestimo(request, id):
+    if request.method == 'POST':
+        try:
+            # Acessar o corpo da requisição
+            data = json.loads(request.body)
+
+            # Verificar se os dados necessários estão presentes
+            equipamento_id = data.get('equipamento_id')
+            colaborador_id = data.get('colaborador_id')
+            data_emprestimo = data.get('data_emprestimo')
+            data_devolucao_prevista = data.get('data_devolucao_prevista')
+            observacoes = data.get('observacoes', '')
+
+            # Verifique se os campos necessários estão presentes
+            if not equipamento_id or not colaborador_id or not data_emprestimo or not data_devolucao_prevista:
+                return JsonResponse({'success': False, 'message': 'Faltando campos obrigatórios'})
+
+            # Buscar o empréstimo no banco
+            emprestimo = Emprestimo.objects.get(id=id)
+
+            # Atualizar os campos
+            emprestimo.equipamento_id = equipamento_id
+            emprestimo.colaborador_id = colaborador_id
+            emprestimo.data_emprestimo = data_emprestimo
+            emprestimo.data_devolucao_prevista = data_devolucao_prevista
+            emprestimo.observacoes = observacoes
+
+            # Salvar as alterações no banco
+            emprestimo.save()
+
+            return JsonResponse({'success': True, 'message': 'Empréstimo atualizado com sucesso!'})
+
+        except json.JSONDecodeError as e:
+            # Caso haja erro na decodificação do JSON
+            return JsonResponse({'success': False, 'message': 'Erro ao processar os dados JSON.'}, status=400)
+
+        except Emprestimo.DoesNotExist:
+            # Caso não encontre o empréstimo com o id informado
+            return JsonResponse({'success': False, 'message': 'Empréstimo não encontrado'}, status=404)
+
+        except Exception as e:
+            # Caso haja qualquer outro erro
+            return JsonResponse({'success': False, 'message': f'Erro desconhecido: {str(e)}'}, status=500)
+
+    else:
+        # Caso o método não seja POST
+        return JsonResponse({'success': False, 'message': 'Método não permitido'}, status=405)
+    
+    
+@csrf_exempt
+def atualizar_equipamento(request, id):
+    if request.method == 'POST':
+        try:
+            # Acessar o corpo da requisição
+            data = json.loads(request.body)
+
+            # Verificar se os dados necessários estão presentes
+            equipamento_id = data.get('equipamento_id')
+            nome = data.get('nome')
+            tipo = data.get('tipo')
+            status = data.get('status')
+            quantidade = data.get('quantidade')
+
+            # Verificar se os campos necessários estão presentes
+            if not nome or not tipo or not status or not quantidade:
+                return JsonResponse({'success': False, 'message': 'Faltando campos obrigatórios'})
+
+            # Buscar o equipamento no banco
+            equipamento = Equipamento.objects.get(id=id)
+
+            # Atualizar os campos
+            equipamento.nome = nome
+            equipamento.tipo = tipo
+            equipamento.status = status
+            equipamento.quantidade = quantidade
+
+            # Salvar as alterações no banco
+            equipamento.save()
+
+            return JsonResponse({'success': True, 'message': 'Equipamento atualizado com sucesso!'})
+
+        except json.JSONDecodeError as e:
+            # Caso haja erro na decodificação do JSON
+            return JsonResponse({'success': False, 'message': 'Erro ao processar os dados JSON.'}, status=400)
+
+        except Equipamento.DoesNotExist:
+            # Caso não encontre o equipamento com o id informado
+            return JsonResponse({'success': False, 'message': 'Equipamento não encontrado'}, status=404)
+
+        except Exception as e:
+            # Caso haja qualquer outro erro
+            return JsonResponse({'success': False, 'message': f'Erro desconhecido: {str(e)}'}, status=500)
+
+    else:
+        # Caso o método não seja POST
+        return JsonResponse({'success': False, 'message': 'Método não permitido'}, status=405)

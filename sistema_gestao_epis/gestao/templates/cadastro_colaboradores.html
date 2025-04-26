@@ -395,6 +395,18 @@ $(document).ready(function() {
                 }
     
                 colaboradorModal.modal('hide');
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso!',
+                    text: isEditMode ? 'Atualizado com sucesso!' : 'Cadastrado com sucesso!',
+                    
+                });
+                setTimeout(() => {
+                    location.reload();
+                }, 1000); // Fecha o alerta após 2 segundos
+                
+                
     
                 if (isEditMode) {
                     const row = $(`tr[data-id="${response.id}"]`);
@@ -436,12 +448,11 @@ $(document).ready(function() {
                     </tr>`;
                     $('tbody').prepend(newRow);
                 }
+                
     
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Sucesso!',
-                    text: isEditMode ? 'Atualizado com sucesso!' : 'Cadastrado com sucesso!',
-                });
+            
+                
+                
             },
             error: function(xhr) {
                 Swal.fire({
