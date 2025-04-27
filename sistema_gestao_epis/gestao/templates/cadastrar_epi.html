@@ -247,6 +247,67 @@
 </div>
 
 
+<!-- Modal Editar Equipamento -->
+<div class="modal fade" id="editarEquipamentoModal" tabindex="-1" aria-labelledby="editarEquipamentoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="editarEquipamentoModalLabel">
+                    <i class="fas fa-tools me-2"></i> Editar Equipamento
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+
+            <form id="editarEquipamentoForm">
+                <input type="hidden" id="equipamento_id" name="equipamento_id">
+
+                <div class="modal-body">
+                    <!-- Nome -->
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome</label>
+                        <input type="text" id="nome" name="nome" class="form-control" required>
+                    </div>
+
+                    <!-- Tipo -->
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo</label>
+                        <input type="text" id="tipo" name="tipo" class="form-control" required>
+                    </div>
+
+                    <!-- Número de Série -->
+                    <div class="mb-3">
+                        <label for="numero_serie" class="form-label">Número de Série</label>
+                        <input type="text" id="numero_serie" name="numero_serie" class="form-control" required>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select id="status" name="status" class="form-select" required>
+                            <option value="Disponível">Disponível</option>
+                            <option value="Em Uso">Em Uso</option>
+                            <option value="Manutenção">Manutenção</option>
+                        </select>
+                    </div>
+
+                    <!-- Observações -->
+                    <div class="mb-3">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea id="observacoes" name="observacoes" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <!-- Ações -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" id="modalEquipamentoSubmitBtn" class="btn btn-warning">Atualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
     <!-- Modal Novo Equipamento -->
     <div class="modal fade" id="novoEquipamentoModal" tabindex="-1" aria-labelledby="novoEquipamentoModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -403,164 +464,113 @@
             
 
       // Submit do formulário de cadastro
-    $('#equipamentoForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        $.ajax({
-            url: $(this).attr('action'),
-            method: 'POST',
-            data: $(this).serialize(),
-            headers: {'X-CSRFToken': '{{ csrf_token }}'},
-            success: function(response) {
-                if (response.success) {
-                    // Fecha o modal e recarrega a lista
-                    $('#novoEquipamentoModal').modal('hide');
-                    carregarEquipamentos();
-                    
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Sucesso!',
-                        text: response.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro',
-                        text: response.message || 'Erro ao cadastrar equipamento'
-                    });
-                }
-            },
-            error: function(xhr) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro',
-                    text: xhr.responseJSON?.message || 'Falha na comunicação com o servidor'
-                });
-            }
-        });
-    });$(document).on('click', '.btn-editar', function() {
+      $(document).on('click', '.btn-editar', function() {
         const equipamentoId = $(this).data('id');
-        console.log("Equipamento ID: ", equipamentoId); // Verificando se o ID do equipamento é capturado corretamente
         
         $.ajax({
             url: `/equipamentos/editar/${equipamentoId}/`,
-            method: 'GET',  // Usando GET para buscar as informações do equipamento
+            method: 'GET',
             success: function(response) {
-                console.log("Resposta recebida: ", response); // Verificando a resposta do servidor
-    
-                if (response.success) {
-                    // Cria o modal de edição dinamicamente
+                console.log(response); // Verifique a resposta completa aqui
+                if (response.success && response.equipamento) {
+                    const equip = response.equipamento;
+            
+                    // Remove o modal existente, caso exista
+                    $('#editarEquipamentoModal').remove();
+            
+                    // Cria o modal com os dados do equipamento
                     const modalHtml = `
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header bg-primary text-white">
-                                    <h5 class="modal-title">
-                                        <i class="fas fa-edit me-2"></i>Editar Equipamento
-                                    </h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <form id="formEditarEquipamento" method="POST" action="/equipamentos/editar/${equipamentoId}/">
-                                    {% csrf_token %}
-                                    <div class="modal-body">
-                                        <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label">Nome *</label>
-                                                <input type="text" class="form-control" name="nome" value="${response.equipamento.nome}" required>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Tipo *</label>
-                                                <select class="form-select" name="tipo" required>
-                                                    <option value="Capacete" ${response.equipamento.tipo === 'Capacete' ? 'selected' : ''}>Capacete</option>
-                                                    <option value="Luva" ${response.equipamento.tipo === 'Luva' ? 'selected' : ''}>Luva</option>
-                                                    <option value="Bota" ${response.equipamento.tipo === 'Bota' ? 'selected' : ''}>Bota</option>
-                                                    <option value="Óculos" ${response.equipamento.tipo === 'Óculos' ? 'selected' : ''}>Óculos</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Status *</label>
-                                                <select class="form-select" name="status" required>
-                                                    <option value="Disponível" ${response.equipamento.status === 'Disponível' ? 'selected' : ''}>Disponível</option>
-                                                    <option value="Emprestado" ${response.equipamento.status === 'Emprestado' ? 'selected' : ''}>Emprestado</option>
-                                                    <option value="Manutenção" ${response.equipamento.status === 'Manutenção' ? 'selected' : ''}>Manutenção</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Quantidade *</label>
-                                                <input type="number" class="form-control" name="quantidade" value="${response.equipamento.quantidade}" min="1" required>
+                        <div class="modal fade" id="editarEquipamentoModal" tabindex="-1" aria-labelledby="editarEquipamentoModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title">
+                                            <i class="fas fa-edit me-2"></i>Editar Equipamento
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form id="formEditarEquipamento" method="POST" action="/equipamentos/editar/${equipamentoId}/">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="edit_nome" class="form-label">Nome *</label>
+                                                    <input type="text" class="form-control" id="edit_nome" name="nome" value="${equip.nome || ''}" required>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="edit_tipo" class="form-label">Tipo *</label>
+                                                    <select class="form-select" id="edit_tipo" name="tipo" required>
+                                                        <option value="">Selecione</option>
+                                                        <option value="Capacete" ${equip.tipo === 'Capacete' ? 'selected' : ''}>Capacete</option>
+                                                        <option value="Luva" ${equip.tipo === 'Luva' ? 'selected' : ''}>Luva</option>
+                                                        <option value="Bota" ${equip.tipo === 'Bota' ? 'selected' : ''}>Bota</option>
+                                                        <option value="Óculos" ${equip.tipo === 'Óculos' ? 'selected' : ''}>Óculos</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="edit_status" class="form-label">Status *</label>
+                                                    <select class="form-select" id="edit_status" name="status" required>
+                                                        <option value="Disponível" ${equip.status === 'Disponível' ? 'selected' : ''}>Disponível</option>
+                                                        <option value="Emprestado" ${equip.status === 'Emprestado' ? 'selected' : ''}>Emprestado</option>
+                                                        <option value="Manutenção" ${equip.status === 'Manutenção' ? 'selected' : ''}>Manutenção</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="edit_quantidade" class="form-label">Quantidade *</label>
+                                                    <input type="number" class="form-control" id="edit_quantidade" name="quantidade" value="${equip.quantidade || 1}" min="1" required>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                        <button type="submit" class="btn btn-primary">Salvar</button>
-                                    </div>
-                                </form>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-primary">Salvar</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>`;
-    
-                    // Atualiza o conteúdo do modal com o HTML gerado dinamicamente
-                    $('#editarEquipamentoModal').html(modalHtml);
-    
-                    // Exibe o modal
-                    $('#editarEquipamentoModal').modal('show');
-                    
-                    // Submit do formulário de edição
+            
+                    // Adiciona o modal ao final do body
+                    $('body').append(modalHtml);
+            
+                    // Inicializa e mostra o modal
+                    const modal = new bootstrap.Modal(document.getElementById('editarEquipamentoModal'));
+                    modal.show();
+            
+                    // Configura o submit do formulário
                     $('#formEditarEquipamento').on('submit', function(e) {
                         e.preventDefault();
-            
                         $.ajax({
-                            url: `/equipamentos/editar/${equipamentoId}/`,
-                            method: 'POST',
+                            url: $(this).attr('action'),
+                            method: 'PUT',
                             data: $(this).serialize(),
-                            headers: {'X-CSRFToken': '{{ csrf_token }}'},  // CSRF Token para a requisição POST
+                            headers: {'X-CSRFToken': '{{ csrf_token }}'},
                             success: function(response) {
                                 if (response.success) {
-                                    $('#editarEquipamentoModal').modal('hide');
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Sucesso!',
-                                        text: response.message,
-                                        timer: 2000
-                                    });
-                                    carregarEquipamentos();  // Função para recarregar a lista de equipamentos
+                                    modal.hide();
+                                    Swal.fire('Sucesso!', response.message, 'success');
+                                    carregarEquipamentos();
                                 } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Erro!',
-                                        text: response.message || 'Falha ao editar.',
-                                    });
+                                    Swal.fire('Erro!', response.message || 'Falha ao editar', 'error');
                                 }
                             },
-                            error: function(xhr, status, error) {
-                                console.error("Erro na requisição:", status, error);
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Erro',
-                                    text: 'Erro ao editar o equipamento.',
-                                });
+                            error: function(xhr) {
+                                Swal.fire('Erro!', xhr.responseText || 'Erro na requisição', 'error');
                             }
                         });
                     });
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro!',
-                        text: response.message || 'Equipamento não encontrado.',
-                    });
+                    Swal.fire('Erro!', response.message || 'Equipamento não encontrado', 'error');
                 }
             },
-            error: function(xhr, status, error) {
-                console.error("Erro ao buscar o equipamento:", status, error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro',
-                    text: 'Erro ao buscar informações do equipamento.',
-                });
+
+            error: function(xhr) {
+                Swal.fire('Erro!', xhr.responseText || 'Erro na requisição', 'error');  
+                
             }
         });
     });
+        
         // Excluir equipamento
         $(document).on('click', '.btn-excluir', function() {
             const equipamentoId = $(this).data('id');

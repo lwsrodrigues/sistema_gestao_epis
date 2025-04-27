@@ -244,14 +244,15 @@ def cadastrar_epi(request):
         'tipos_epi': Equipamento.TIPO_CHOICES,
         'status_choices': Equipamento.STATUS_CHOICES
     })
-    
 @csrf_exempt
 @require_http_methods(['GET'])
 @login_required
 @user_passes_test(is_admin)
 def obter_equipamento(request, id):
+    print(f"ID do equipamento: {id}")  # Debugging
     try:
         equipamento = Equipamento.objects.get(id=id)
+        print(f"Equipamento encontrado: {equipamento}")  # Verificando o objeto
         return JsonResponse({
             'success': True,
             'id': equipamento.id,
@@ -267,7 +268,7 @@ def obter_equipamento(request, id):
     except Equipamento.DoesNotExist:
         return JsonResponse({
             'success': False,
-            'message': 'Equipamento não encontrado'
+            'message': f"Equipamento com ID {id} não encontrado."
         }, status=404)
     except Exception as e:
         return JsonResponse({
@@ -275,43 +276,30 @@ def obter_equipamento(request, id):
             'message': str(e)
         }, status=500)
 
+from datetime import datetime
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import Equipamento
+
 @csrf_exempt
-@require_http_methods(['PUT'])
+@require_http_methods(['GET'])
 @login_required
 @user_passes_test(is_admin)
-def editar_equipamento(request):
+def editar_equipamento(request, id):
     try:
-        data = request.POST
-        equipamento_id = data.get('id')
-        
-        if not equipamento_id:
-            return JsonResponse({
-                'success': False,
-                'message': 'ID do equipamento não fornecido'
-            }, status=400)
-            
-        equipamento = Equipamento.objects.get(id=equipamento_id)
-        
-        # Atualiza os campos
-        equipamento.nome = data.get('nome', equipamento.nome)
-        equipamento.tipo = data.get('tipo', equipamento.tipo)
-        equipamento.numero_serie = data.get('numero_serie', equipamento.numero_serie)
-        equipamento.quantidade = int(data.get('quantidade', equipamento.quantidade))
-        equipamento.data_fabricacao = data.get('data_fabricacao', equipamento.data_fabricacao)
-        equipamento.status = data.get('status', equipamento.status)
-        equipamento.observacoes = data.get('observacoes', equipamento.observacoes)
-        
-        equipamento.save()
-        
+        equipamento = get_object_or_404(Equipamento, id=id)
+
+        # Retorna os dados do equipamento para o frontend
         return JsonResponse({
             'success': True,
-            'message': 'Equipamento atualizado com sucesso',
             'equipamento': {
                 'id': equipamento.id,
                 'nome': equipamento.nome,
                 'tipo': equipamento.tipo,
                 'status': equipamento.status,
-                'ultima_atualizacao': equipamento.ultima_atualizacao.strftime('%d/%m/%Y %H:%M')
+                'quantidade': equipamento.quantidade,
+                'observacoes': equipamento.observacoes,
             }
         })
     except Equipamento.DoesNotExist:
@@ -319,11 +307,7 @@ def editar_equipamento(request):
             'success': False,
             'message': 'Equipamento não encontrado'
         }, status=404)
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': str(e)
-        }, status=500)
+
 
 @csrf_exempt
 @require_http_methods(['DELETE'])

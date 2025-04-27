@@ -724,9 +724,8 @@ $('#modalEmprestimoForm').submit(function(e) {
 });
 
 
-// Quando clicar no botão de editar
 $(document).on('click', '.btn-editar', function() {
-    const emprestimoId = $(this).data('id');
+    const emprestimoId = $(this).data('id'); // <<< aqui pega do botão certo
 
     $.ajax({
         url: `/emprestimos/obter/${emprestimoId}/`,
@@ -756,7 +755,7 @@ $(document).on('click', '.btn-editar', function() {
             $('#editarEmprestimoModal .modal-title').html('<i class="fas fa-edit me-2"></i> Editar Empréstimo');
             $('#modalSubmitBtn').text('Atualizar');
 
-            // Grava o ID do empréstimo no form
+            // Grava o ID no form para usar depois
             $('#editarEmprestimoForm').data('id', emprestimoId);
 
             $('#editarEmprestimoModal').modal('show');
@@ -774,7 +773,8 @@ $(document).on('click', '#modalSubmitBtn', function(e) {
     e.preventDefault();
 
     const form = $('#editarEmprestimoForm');
-    const emprestimoId = form.data('');
+    const emprestimoId = form.data('id');
+
 
     if (!emprestimoId) {
         Swal.fire('Erro', 'ID do empréstimo não encontrado.', 'error');
@@ -802,11 +802,11 @@ $(document).on('click', '#modalSubmitBtn', function(e) {
         }),
         success: function(response) {
             if (response.success) {
-                Swal.fire('Sucesso', 'Empréstimo atualizado com sucesso!', 'success');
-                $('#editarEmprestimoModal').modal('hide');
-                $('.modal-backdrop').remove();
-              
-                location.reload()
+                Swal.fire('Sucesso', 'Empréstimo atualizado com sucesso!', 'success').then(() => {
+                    $('#editarEmprestimoModal').modal('hide');
+                    $('.modal-backdrop').remove();
+                    location.reload();
+                });
             } else {
                 Swal.fire('Erro', response.message || 'Falha ao atualizar.', 'error');
             }
