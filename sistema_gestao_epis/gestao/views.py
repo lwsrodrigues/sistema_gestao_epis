@@ -410,16 +410,15 @@ def cadastrar_emprestimo(request):
             equipamento.save()
 
         return JsonResponse({
-            'success': True,
-            'message': 'Empréstimo registrado com sucesso!',
-            'data': {
-                'id': emprestimo.id,
-                'equipamento': emprestimo.equipamento.nome,
-                'colaborador': emprestimo.colaborador.nome,
-                'data_emprestimo': str(data_emprestimo),
-                'data_devolucao_prevista': str(data_devolucao)
-            }
-        })
+        'success': True,
+        'message': 'Empréstimo registrado com sucesso!',
+        'id': emprestimo.id,
+        'equipamento': emprestimo.equipamento.nome,
+        'colaborador': emprestimo.colaborador.nome,
+        'data_emprestimo': str(data_emprestimo),
+        'status': emprestimo.status,
+    })
+
 
     except Exception as e:
         logger.error(f"Erro ao cadastrar empréstimo: {str(e)}", exc_info=True)
