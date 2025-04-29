@@ -1,6 +1,6 @@
 # 👷‍♂️ Sistema de Gerenciamento de EPIs - Construção Civil
 
-> 🛠️ Desenvolvemos um Sistemas para resolver um problema real de gestão de Equipamentos de Proteção Individual (EPIs) em uma construtora.
+> 🛠️ Desenvolvemos uma solução completa de Gestão de EPIs (Equipamentos de Proteção Individual) voltada para atender as necessidades específicas de Construtoras Civis, que enfrentavam desafios no controle manual de distribuição e devolução de equipamentos. O sistema foi criado com o objetivo de aumentar a segurança dos colaboradores, evitar extravios e reduzir desperdícios, automatizando o cadastro de equipamentos e funcionários, o controle de empréstimos e devoluções, além de implementar alertas e notificações automáticas para vencimentos, entregas pendentes e necessidade de reposição. A plataforma inclui um painel administrativo com gráficos interativos, relatórios gerenciais e indicadores de desempenho, permitindo total rastreabilidade dos EPIs e maior conformidade com as normas de segurança do trabalho. 
 
 ---
 
