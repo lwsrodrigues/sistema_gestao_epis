@@ -10,6 +10,14 @@ Este sistema tem como objetivo gerenciar de forma eficiente o **empréstimo e de
 
 ---
 
+## 📸 Spoiler do Projeto
+
+> Veja abaixo uma prévia da interface do sistema:
+
+![Tela de Login](./www.reallygreatsite.com1166.png)
+
+---
+
 ## 🎯 Funcionalidades
 
 ### ✅ Requisitos Funcionais
